@@ -42,10 +42,10 @@
     <div>
         <img src="/mainpage/1.webp" alt="" />
     </div>
-    <div class=" h-[1100px] bg-[url('/mainpage/2-back.png')]">
+    <div class="bg-[url('/mainpage/2-back.png')]">
         <img src="/mainpage/2-1.png" alt="">
     </div>
-    <div class=" h-[1100px] bg-[url('/mainpage/2-back.png')]">
+    <div class="bg-[url('/mainpage/2-back.png')] pb-6">
         <div data-aos="fade-up">
             <img src="/mainpage/2-slide/111.png" class="mx-auto" alt="">
         </div>
@@ -64,7 +64,7 @@
     </div>
 
 
-    <div class=" h-[1100px] bg-[url('/mainpage/3-back.webp')]">
+    <div class="bg-[url('/mainpage/3-back.webp')]">
         <div>
             <img src="/mainpage/3-1.png" class="mx-auto" alt="">
         </div>
