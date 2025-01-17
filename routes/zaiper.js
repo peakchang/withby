@@ -26,11 +26,21 @@ zapierRouter.post('/', async (req, res) => {
     const body = req.body;
     console.log(body);
 
+    const dbData = {
+        dbName : body.name,
+        dbPhone : body.phone,
+        dbForm : body.form,
+        etc1 : body.etc1 ? body.etc1 : undefined,
+        etc2 : body.etc2 ? body.etc2 : undefined,
+        etc3 : body.etc3 ? body.etc3 : undefined,
+    }
+
     try {
 
-        const dbName = body['_1']
-        const get_temp_phone = body['_2'];
-        let get_phone = get_temp_phone
+        const dbName = dbData.dbName
+        let get_phone = dbData.dbPhone
+        const get_form_name = dbData.dbForm
+        
         try {
             get_phone = get_temp_phone.replace('+82', '').replace(/[^0-9]/g, "");
             if (get_phone.charAt(0) != '0') {
@@ -42,14 +52,14 @@ zapierRouter.post('/', async (req, res) => {
 
         const nowStr = moment().format('YYYY-MM-DD HH:mm:ss');
 
-        const get_form_name = body['_3']
+        
         var reFormName = get_form_name.replace(/[a-zA-Z\(\)\-\s]/g, '')
 
         // 조회 먼저 해 보고 만약 기존 DB와 겹치면 패스하기
 
         try {
-            const chkFor2WeeksDataQuery = "SELECT * FROM application_form WHERE af_mb_phone = ? AND af_form_name = ? AND af_created_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH);"
-            const chkFor2WeeksData = await sql_con.promise().query(chkFor2WeeksDataQuery, [get_phone]);
+            // const chkFor2WeeksDataQuery = "SELECT * FROM application_form WHERE af_mb_phone = ? AND af_form_name = ? AND af_created_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH);"
+            // const chkFor2WeeksData = await sql_con.promise().query(chkFor2WeeksDataQuery, [get_phone]);
 
             // 테스트때는 잠시 주석!
             // if (chkFor2WeeksData[0].length > 0) {
@@ -79,21 +89,21 @@ zapierRouter.post('/', async (req, res) => {
         let etcValuesStr = '';
         let addEtcMessage = '';
 
-        if (body['_4']) {
+        if (dbData.etc1) {
             etcInsertStr = etcInsertStr + `, af_mb_etc1`;
-            etcValuesStr = etcValuesStr + `, '${body['_4']}'`;
-            addEtcMessage = addEtcMessage + `// 기타 정보1 : ${body['_4']}`
+            etcValuesStr = etcValuesStr + `, '${dbData.etc1}'`;
+            addEtcMessage = addEtcMessage + `// 기타 정보1 : ${dbData.etc1}`
         }
-        if(body['_5']){
+        if(dbData.etc2){
             etcInsertStr = etcInsertStr + `, af_mb_etc2`;
-            etcValuesStr = etcValuesStr + `, '${body['_5']}'`;
-            addEtcMessage = addEtcMessage + `// 기타 정보1 : ${body['_5']}`
+            etcValuesStr = etcValuesStr + `, '${dbData.etc2}'`;
+            addEtcMessage = addEtcMessage + `// 기타 정보1 : ${dbData.etc2}`
         }
 
-        if (body['_6']) {
+        if (dbData.etc3) {
             etcInsertStr = etcInsertStr + `, af_mb_etc3`;
-            etcValuesStr = etcValuesStr + `, '${body['_6']}'`;
-            addEtcMessage = addEtcMessage + `// 기타 정보1 : ${body['_6']}`
+            etcValuesStr = etcValuesStr + `, '${dbData.etc3}'`;
+            addEtcMessage = addEtcMessage + `// 기타 정보1 : ${dbData.etc3}`
         }
         // for (const key in body) {
         //     if (key.includes('raw__etc1')) {
