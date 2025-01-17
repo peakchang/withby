@@ -4,8 +4,7 @@
 
     const seoValue = {
         title: "위드분양",
-        description:
-            "현장에서는 내가 1등! 위드분양과 함께 최고의 성과를!",
+        description: "현장에서는 내가 1등! 위드분양과 함께 최고의 성과를!",
         keywords:
             "부동산 분양,아파트 분양,오피스텔 분양,지식산업센터 분양,레지던스 분양,부동산 분양 정보,아파트 분양 정보,오피스텔 분양 정보,지식산업센터 분양 정보,레지던스 분양 정보,아파트 청약,분양정보",
         url: "https://withby.kr/",
@@ -19,13 +18,25 @@
     $effect(() => {
         AOS.init();
         loading = false;
+
+        swiper = new Swiper(".mainswiper", {
+            // Optional parameters
+            autoHeight: true,
+            loop: true,
+            slidesPerView: 2,
+            spaceBetween: 20,
+            autoplay: {
+                delay: 1500,
+                disableOnInteraction: false,
+            },
+            breakpoints: {
+                640: {
+                    slidesPerView: 3,
+                    spaceBetween: 20,
+                },
+            },
+        });
     });
-
-
-
-
-
-
 </script>
 
 <svelte:head>
@@ -43,30 +54,56 @@
         <img src="/mainpage/1.webp" alt="" />
     </div>
     <div class="bg-[url('/mainpage/2-back.png')]">
-        <img src="/mainpage/2-1.png" alt="">
+        <img src="/mainpage/2-1.png" alt="" />
     </div>
     <div class="bg-[url('/mainpage/2-back.png')] pb-6">
         <div data-aos="fade-up">
-            <img src="/mainpage/2-slide/111.png" class="mx-auto" alt="">
+            <img src="/mainpage/2-slide/111.png" class="mx-auto" alt="" />
         </div>
         <div data-aos="fade-up">
-            <img src="/mainpage/2-slide/222.png" class="mx-auto" alt="">
+            <img src="/mainpage/2-slide/222.png" class="mx-auto" alt="" />
         </div>
         <div data-aos="fade-up">
-            <img src="/mainpage/2-slide/333.png" class="mx-auto" alt="">
+            <img src="/mainpage/2-slide/333.png" class="mx-auto" alt="" />
         </div>
         <div data-aos="fade-up">
-            <img src="/mainpage/2-slide/444.png" class="mx-auto" alt="">
+            <img src="/mainpage/2-slide/444.png" class="mx-auto" alt="" />
         </div>
         <div data-aos="fade-up">
-            <img src="/mainpage/2-slide/555.png" class="mx-auto" alt="">
+            <img src="/mainpage/2-slide/555.png" class="mx-auto" alt="" />
         </div>
     </div>
 
+    <div class="swiper mainswiper">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide">
+                <img src="/mainpage/swipe/with-katalk-1.jpg" alt="" />
+            </div>
+            <div class="swiper-slide">
+                <img src="/mainpage/swipe/with-katalk-2.jpg" alt="" />
+            </div>
+            <div class="swiper-slide">
+                <img src="/mainpage/swipe/with-katalk-3.jpg" alt="" />
+            </div>
+            <div class="swiper-slide">
+                <img src="/mainpage/swipe/with-katalk-4.jpg" alt="" />
+            </div>
+            <div class="swiper-slide">
+                <img src="/mainpage/swipe/with-katalk-5.jpg" alt="" />
+            </div>
+            <div class="swiper-slide">
+                <img src="/mainpage/swipe/with-katalk-6.jpg" alt="" />
+            </div>
+            <div class="swiper-slide">
+                <img src="/mainpage/swipe/with-katalk-7.jpg" alt="" />
+            </div>
+        </div>
+        <div class="swiper-pagination"></div>
+    </div>
 
     <div class="bg-[url('/mainpage/3-back.webp')]">
         <div>
-            <img src="/mainpage/3-1.png" class="mx-auto" alt="">
+            <img src="/mainpage/3-1.png" class="mx-auto" alt="" />
         </div>
     </div>
 </div>
@@ -152,32 +189,6 @@
 </div>
 
 <style>
-    .containers {
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-    }
-
-    .image {
-        width: 100%;
-        max-width: 600px;
-    }
-
-    .video-wrapper {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        /* display: none; */
-        /* Initially hidden */
-    }
-
-    .video-wrapper video {
-        width: 100%;
-        height: auto;
-    }
-
     .swiper {
         padding: 30px 0;
         width: 100%;
