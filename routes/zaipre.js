@@ -20,8 +20,12 @@ zapierRouter.get('/', (req, res) => {
 });
 
 zapierRouter.post('/', async (req, res) => {
+    console.log('일단 들어 왔니?!?!?!??!');
+    
     let status = true;
     const body = req.body;
+    console.log(body);
+    
     try {
         const get_temp_phone = body['raw__phone_number'];
         let get_phone = get_temp_phone
