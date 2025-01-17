@@ -115,6 +115,9 @@ zapierRouter.post('/', async (req, res) => {
 
         // 폼 insert 하기!!
         const formInertSql = `INSERT INTO application_form (af_form_name, af_form_type_in, af_form_location, af_mb_name, af_mb_phone, af_mb_status ${etcInsertStr}, af_created_at) VALUES (?,?,?,?,?,? ${etcValuesStr},?);`;
+
+        console.log(formInertSql);
+        
         await sql_con.promise().query(formInertSql, values)
 
         // 해당 폼네임에 저장된 담당자 리스트 찾기
@@ -126,14 +129,14 @@ zapierRouter.post('/', async (req, res) => {
         // for await (const goUser of findUser) {
         //     const mailSubjectManager = `${reFormName} / ${dbName} 고객 DB 접수되었습니다.`;
         //     const mailContentManager = `현장 : ${reFormName} / 이름 : ${dbName} / 전화번호 : ${get_phone} ${addEtcMessage}`;
-        //     mailSender.sendEmail(goUser.user_email, mailSubjectManager, mailContentManager);
+        //     mailSender(goUser.user_email, mailSubjectManager, mailContentManager);
         // }
 
         // 최고관리자에게 이메일 발송
         const mailSubject = `(위드분양 접수) ${reFormName} 고객명 ${dbName} 접수되었습니다.`;
         const mailContent = `현장: ${reFormName} / 이름 : ${dbName} / 전화번호 : ${get_phone} ${addEtcMessage}`;
-        mailSender.sendEmail('adpeak@naver.com', mailSubject, mailContent);
-        mailSender.sendEmail('changyong112@naver.com', mailSubject, mailContent);
+        mailSender('adpeak@naver.com', mailSubject, mailContent);
+        mailSender('changyong112@naver.com', mailSubject, mailContent);
 
 
 
