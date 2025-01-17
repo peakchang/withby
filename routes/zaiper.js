@@ -38,11 +38,11 @@ zapierRouter.post('/', async (req, res) => {
     try {
 
         const dbName = dbData.dbName
-        let get_phone = dbData.dbPhone
+        let get_phone = ""
         const get_form_name = dbData.dbForm
         
         try {
-            get_phone = get_temp_phone.replace('+82', '').replace(/[^0-9]/g, "");
+            get_phone = dbData.dbPhone.replace('+82', '').replace(/[^0-9]/g, "");
             if (get_phone.charAt(0) != '0') {
                 get_phone = `0${get_phone}`
             }
