@@ -130,7 +130,7 @@ zapierRouter.post('/', async (req, res) => {
         // }
 
         // 최고관리자에게 이메일 발송
-        const mailSubject = `(리치분양 접수) ${reFormName} 고객명 ${dbName} 접수되었습니다.`;
+        const mailSubject = `(위드분양 접수) ${reFormName} 고객명 ${dbName} 접수되었습니다.`;
         const mailContent = `현장: ${reFormName} / 이름 : ${dbName} / 전화번호 : ${get_phone} ${addEtcMessage}`;
         mailSender.sendEmail('adpeak@naver.com', mailSubject, mailContent);
         mailSender.sendEmail('changyong112@naver.com', mailSubject, mailContent);
@@ -163,7 +163,7 @@ zapierRouter.post('/', async (req, res) => {
         //     dbName = '성함 미입력'
         // }
 
-        // var customerInfo = { ciName: dbName, ciCompany: '리치분양', ciSite: getSiteInfo.sl_site_name, ciSiteLink: siteList, ciReceiver: receiverStr }
+        // var customerInfo = { ciName: dbName, ciCompany: '위드분양', ciSite: getSiteInfo.sl_site_name, ciSiteLink: siteList, ciReceiver: receiverStr }
 
         // // 매니저한테 알림톡 / 문자 발송
         // for (let oo = 0; oo < findUser.length; oo++) {
