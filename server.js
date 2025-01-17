@@ -22,6 +22,7 @@ import { apiRouter } from "./routes/api.js"
 import { authRouter } from "./routes/auth.js"
 
 import { webhookRouter } from './routes/webhook.js';
+import { zapierRouter } from './routes/zaipre.js';
 
 import { subdomainRouter } from './routes/subdomain.js';
 
@@ -79,6 +80,8 @@ app.use('/api/v3/managerdb', adminManagerDbRouter);
 app.use('/api/v3/dbcount', adminDbCount);
 
 app.use('/webhook', webhookRouter);
+app.use('/zapier', zapierRouter);
+
 
 app.use('/api/subdomain', subdomainRouter);
 
