@@ -51,7 +51,7 @@
 
 <div class="fixed w-full left-0 bottom-0" style="z-index: 9999999;">
     <div class=" max-w-[860px] mx-auto bg-white py-3">
-        니전화번호! 이미지 줘!
+        <img src="/footer-phone.webp" alt="">
     </div>
 
 </div>
