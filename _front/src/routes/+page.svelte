@@ -15,6 +15,9 @@
     let loading = $state(true);
     let footerData = data.footerData ? data.footerData : {};
 
+    console.log(footerData);
+    
+
     $effect(() => {
         AOS.init();
         loading = false;
@@ -115,18 +118,10 @@
     </div>
 </div>
 
-<div id="ft">
+<div id="ft" class=" mb-16 md:mb-20 mx-auto max-w-[860px]">
     <div class="container pb-10 suit-font mx-auto">
-        <div class="grid grid-cols-4">
-            <div
-                class="col-span-4 md:col-span-1 flex justify-center items-center"
-            >
-                <div class="max-w-44">
-                    <img src="/footer-logo.png" alt="" />
-                </div>
-            </div>
-
-            <div class="col-span-4 md:col-span-3 text-center">
+        <div class="">
+            <div class="text-center">
                 <div class="suit_font text-center mt-5 text-xs md:text-base">
                     {#if footerData["fs_personal_officer"]}
                         <span class="inline-block mr-4">
