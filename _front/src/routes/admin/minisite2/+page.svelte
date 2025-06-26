@@ -1,11 +1,18 @@
 <script>
     import { invalidateAll } from "$app/navigation";
-    import { back_api } from "$src/lib/const.js";
+    import { back_api, back_api_origin } from "$src/lib/const.js";
     import axios from "axios";
+    import { page } from "$app/stores";
 
     let { data } = $props();
     let mDatas = $state([]);
     let selectIdx = $state(0);
+    let checkedList = $state([]);
+
+    let host = $state($page.url.host);
+    if (import.meta.env.VITE_ENV == "dev") {
+        host = "localhost:5173";
+    }
 
     $effect(() => {
         mDatas = data.minisiteData;
@@ -18,6 +25,8 @@
 
     let addSubDomainVal = $state("");
     let addSubDomainBool = $state(true);
+
+    //
 
     async function searchSiteList() {
         try {
@@ -51,6 +60,8 @@
     }
 
     async function addSubDomain() {
+        addSubDomainVal = addSubDomainVal.replace(/\s/g, "");
+
         try {
             const res = await axios.post(
                 `${back_api}/minisite/add_sub_domain`,
@@ -64,10 +75,52 @@
             }
         } catch (error) {}
     }
+
+    async function changeTypeFunc() {
+        const idx = this.value;
+        const ld_view_type = mDatas[idx]["ld_view_type"];
+        const ld_id = mDatas[idx]["ld_id"];
+        if (!ld_view_type) {
+            alert("타입을 선택해주세요~");
+            return;
+        }
+
+        try {
+            const res = await axios.post(
+                `${back_api}/minisite/update_site_type`,
+                {
+                    ld_view_type,
+                    ld_id,
+                },
+            );
+            if (res.status == 200) {
+                invalidateAll();
+                alert("업데이트 완료!");
+            }
+        } catch (error) {}
+    }
+
+    async function deleteSite() {
+        console.log(checkedList);
+        if (!confirm("사이트를 삭제하면 이미지 등 전부 삭제됨! 후회 NO?")) {
+            return;
+        }
+
+        try {
+            const res = await axios.post(
+                `${back_api_origin}/api/subdomain/delete_site`,
+                { checkedList },
+            );
+        } catch (err) {
+            const m = err.response.data.message;
+            alert(m ? m : "에러! 다시 시도해주세요!");
+        }
+    }
 </script>
 
 <div>
     <div class="mb-2">
+        <!-- svelte-ignore event_directive_deprecated -->
         <button
             class="btn btn-success btn-sm text-white"
             on:click={() => {
@@ -76,12 +129,18 @@
         >
             사이트 추가
         </button>
+
+        <!-- svelte-ignore event_directive_deprecated -->
+        <button class="btn btn-error btn-sm text-white" on:click={deleteSite}>
+            사이트 삭제
+        </button>
     </div>
     <div
         class="mb-1 w-1/2 md:w-1/3 flex gap-2 items-center"
         class:hidden={addSubDomainBool}
     >
         <input type="text" class="input-base" bind:value={addSubDomainVal} />
+        <!-- svelte-ignore event_directive_deprecated -->
         <button class="btn btn-info btn-sm text-white" on:click={addSubDomain}>
             도메인 추가
         </button>
@@ -103,6 +162,12 @@
                 <th class="in-th text-xs md:text-sm">사이트 이름</th>
                 <th class="in-th text-xs md:text-sm">서브도메인</th>
                 <th class="in-th text-xs md:text-sm">관리</th>
+                <th class="in-th text-xs md:text-sm">
+                    타입
+                    <span class=" font-normal text-xs">
+                        (없으면 자동으로 옛날거)
+                    </span>
+                </th>
                 <th class="in-th text-xs md:text-sm">현장</th>
                 <th class="in-th text-xs md:text-sm">조회수</th>
                 <th class="in-th text-xs md:text-sm">콜카운트</th>
@@ -116,6 +181,8 @@
                         <input
                             type="checkbox"
                             class="checkbox checkbox-xs md:checkbox-sm"
+                            value={mdata.ld_id}
+                            bind:group={checkedList}
                         />
                     </td>
                     <td class="in-td text-center">
@@ -127,7 +194,7 @@
                     <td class="in-td">
                         <div class="px-2 flex flex-wrap gap-2 justify-center">
                             <a
-                                href={`https://${mDatas[idx]["ld_domain"]}.adpeak.kr`}
+                                href={`${$page.url.protocol}//${mDatas[idx]["ld_domain"]}.${host}`}
                                 class="btn btn-outline btn-info btn-xs"
                                 target="_blank"
                             >
@@ -138,7 +205,7 @@
                                 <span>사이트</span>
                             </a>
                             <a
-                                href={`https://${mDatas[idx]["ld_domain"]}.adpeak.kr/visit`}
+                                href={`${$page.url.protocol}//${mDatas[idx]["ld_domain"]}.${host}/visit`}
                                 class="btn btn-outline btn-success btn-xs"
                                 target="_blank"
                             >
@@ -146,14 +213,56 @@
                                 <span>방문자수</span>
                             </a>
 
-                            <a
-                                href={`https://${mDatas[idx]["ld_domain"]}.adpeak.kr/setting`}
-                                class="btn btn-success btn-xs text-white"
-                                target="_blank"
+                            {#if mDatas[idx]["ld_view_type"] == "old"}
+                                <a
+                                    href={`${$page.url.protocol}//${mDatas[idx]["ld_domain"]}.${host}/setting`}
+                                    class="btn btn-success btn-xs text-white"
+                                    target="_blank"
+                                >
+                                    <i class="fa fa-cog" aria-hidden="true"></i>
+                                    <span>관리</span>
+                                </a>
+                            {:else}
+                                <a
+                                    href={`${$page.url.protocol}//${mDatas[idx]["ld_domain"]}.${host}/site_set`}
+                                    class="btn btn-success btn-xs text-white"
+                                    target="_blank"
+                                >
+                                    <i class="fa fa-cog" aria-hidden="true"></i>
+                                    <span>관리</span>
+                                </a>
+                            {/if}
+                        </div>
+                    </td>
+                    <td class="in-td text-center">
+                        <div class="p-2 flex items-center gap-2 justify-center">
+                            <label class="flex items-center gap-1.5">
+                                <input
+                                    type="radio"
+                                    value="old"
+                                    class="radio radio-secondary radio-xs"
+                                    bind:group={mDatas[idx]["ld_view_type"]}
+                                />
+                                <span>옛날거</span>
+                            </label>
+
+                            <label class="flex items-center gap-1.5">
+                                <input
+                                    type="radio"
+                                    value="new"
+                                    class="radio radio-secondary radio-xs"
+                                    bind:group={mDatas[idx]["ld_view_type"]}
+                                />
+                                <span>새거</span>
+                            </label>
+                            <!-- svelte-ignore event_directive_deprecated -->
+                            <button
+                                class="btn btn-secondary btn-xs"
+                                value={idx}
+                                on:click={changeTypeFunc}
                             >
-                                <i class="fa fa-cog" aria-hidden="true"></i>
-                                <span>관리</span>
-                            </a>
+                                변경
+                            </button>
                         </div>
                     </td>
                     <td class="in-td text-center">
@@ -200,6 +309,7 @@
                                     class="input-base"
                                     bind:value={filterKeyword}
                                 />
+                                <!-- svelte-ignore event_directive_deprecated -->
                                 <button
                                     class="btn btn-outline btn-info btn-xs h-8"
                                     value={mDatas[idx]["ld_id"]}
@@ -223,6 +333,7 @@
                                         </option>
                                     {/each}
                                 </select>
+                                <!-- svelte-ignore event_directive_deprecated -->
                                 <button
                                     class="btn btn-outline btn-info btn-xs h-8"
                                     value={mDatas[idx]["ld_id"]}
