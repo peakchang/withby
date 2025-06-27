@@ -49,17 +49,6 @@ zapierRouter.post('/', async (req, res) => {
         const nowStr = moment().format('YYYY-MM-DD HH:mm:ss');
 
         const get_form_name = body['form_name']
-        
-        if (get_form_name.includes('rich') || get_form_name.includes('RICH') || get_form_name.includes('리치')) {
-            try {
-                const result = await axios.post('https://richby.co.kr/zapier', body)
-                console.log(`리치로 발송 상태! : ${result.status}`);
-
-                return res.sendStatus(200);
-            } catch (error) {
-                return res.sendStatus(200);
-            }
-        }
 
         var reFormName = get_form_name.replace(/[a-zA-Z\(\)\-\s]/g, '')
 
@@ -95,22 +84,6 @@ zapierRouter.post('/', async (req, res) => {
         let etcInsertStr = '';
         let etcValuesStr = '';
         let addEtcMessage = '';
-
-        // for (const key in body) {
-        //     if (key.includes('raw__etc1')) {
-        //         etcInsertStr = etcInsertStr + `, af_mb_etc1`;
-        //         etcValuesStr = etcValuesStr + `, '${body[key]}'`;
-        //         addEtcMessage = addEtcMessage + `// 기타 정보1 : ${body[key]}`
-        //     } else if (key.includes('raw__etc2')) {
-        //         etcInsertStr = etcInsertStr + `, af_mb_etc2`;
-        //         etcValuesStr = etcValuesStr + `, '${body[key]}'`;
-        //         addEtcMessage = addEtcMessage + `// 기타 정보2 : ${body[key]}`
-        //     } else if (key.includes('raw__etc3')) {
-        //         etcInsertStr = etcInsertStr + `, af_mb_etc3`;
-        //         etcValuesStr = etcValuesStr + `, '${body[key]}'`;
-        //         addEtcMessage = addEtcMessage + `// 기타 정보3 : ${body[key]}`
-        //     }
-        // }
 
         let idx = 0;
         for (const key in body) {
