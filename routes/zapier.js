@@ -147,7 +147,7 @@ zapierRouter.post('/', async (req, res) => {
         const mailContent = `현장: ${reFormName} / 이름 : ${dbName} / 전화번호 : ${get_phone} ${addEtcMessage}`;
         mailSender('adpeak@naver.com', mailSubject, mailContent);
         mailSender('changyong112@naver.com', mailSubject, mailContent);
-        mailSender('slkym@naver.com', mailSubject, mailContent);
+        // mailSender('slkym@naver.com', mailSubject, mailContent);
 
 
 
