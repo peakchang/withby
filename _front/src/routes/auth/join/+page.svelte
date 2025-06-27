@@ -95,7 +95,7 @@
 
 <div class=" mt-20 max-w-96 mx-auto suit-font">
     <div class="text-center text-gray-600 text-2xl kbo-font">
-        탑분양 회원가입
+        위드분양 회원가입
     </div>
 
     <!-- svelte-ignore event_directive_deprecated -->
