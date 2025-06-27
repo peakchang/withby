@@ -66,7 +66,6 @@ adminAllDbRouter.post('/load_customer_info', async (req, res) => {
         WHERE c.af_id = ${body.customer_id};
         `
         const [customerInfoRows] = await sql_con.promise().query(getCustomerInfoQuery);
-        console.log(customerInfoRows);
 
         customer_info = customerInfoRows[0]
 

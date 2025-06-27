@@ -16,13 +16,7 @@ let img_upload_set = multer({
     storage: multer.diskStorage({
         destination: (req, file, cb) => {
             const folder = req.body.folder || 'default';
-            console.log(__dirname);
-
-            console.log(folder);
-
             const uploadPath = path.join(__dirname, '..', 'public', 'uploads', 'image', folder);
-            console.log(uploadPath);
-
             ensureDirectoryExistence(uploadPath);
             cb(null, uploadPath);
         },

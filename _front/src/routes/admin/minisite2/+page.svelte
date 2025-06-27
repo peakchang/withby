@@ -101,7 +101,6 @@
     }
 
     async function deleteSite() {
-        console.log(checkedList);
         if (!confirm("사이트를 삭제하면 이미지 등 전부 삭제됨! 후회 NO?")) {
             return;
         }

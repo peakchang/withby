@@ -54,7 +54,6 @@ export const load = async ({ params, url, data }) => {
         }
     }
 
-    console.log(datas);
     
     return { datas, pageArr, reverseIdxArr, site_list, statusArr, allPage }
 }

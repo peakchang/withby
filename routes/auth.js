@@ -127,8 +127,6 @@ authRouter.post("/login", async (req, res) => {
 
                 const updateQuery = "UPDATE users SET refresh_token = ? WHERE id = ?";
                 await sql_con.promise().query(updateQuery, [token, userInfo.id]);
-
-                console.log('여기까지는 오지??!1');
                 
                 // if(process.env.NODE_ENV == 'production') {
                 //     res.cookie("tk", refreshToken, { httpOnly: true, secure: true });

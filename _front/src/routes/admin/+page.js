@@ -14,7 +14,5 @@ export const load = async ({ params, url, data }) => {
     } catch (err) {
         console.error(err.message);
     }
-
-    console.log(formStatusData);
     return { formStatusData }
 }

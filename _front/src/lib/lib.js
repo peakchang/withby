@@ -69,7 +69,6 @@ export function setParams(params, clear = false) {
 
     // URL 갱신
     currentUrl.search = searchParams.toString();
-    console.log('Updated URL:', currentUrl.toString()); // 디버깅용
 
     // URL 변경
     goto(currentUrl.pathname + currentUrl.search, { replaceState: true, invalidateAll: true });
@@ -113,13 +112,11 @@ export function formatPhoneNumber(input) {
  */
 const uploadImageAct = (back_api_url, callback, options = {}) => {
 
-    console.log('함수 진입은 해??');
 
     const folder = options.folder || "testfolder2";
     // const maxWidthOrHeight = options.maxWidth || 1200;
 
     const input = document.createElement("input");
-    console.log(input);
 
     input.setAttribute("type", "file");
     input.setAttribute("accept", ".png,.jpg,.jpeg,.webp");
@@ -145,21 +142,9 @@ const uploadImageAct = (back_api_url, callback, options = {}) => {
                 .toString(36)
                 .substring(2, 11)}.${compressedFile.name.split(".")[1]}`;
 
-            console.log(fileName);
 
             imgForm.append("folder", folder);
             imgForm.append("onimg", compressedFile, fileName);
-
-            // FormData의 key 값과 value값 찾기
-            // let keys = imgForm.keys();
-            // for (const pair of keys) {
-            //     console.log(`name : ${pair}`);
-            // }
-
-            // let values = imgForm.values();
-            // for (const pair of values) {
-            //     console.log(`value : ${pair}`);
-            // }
 
             const res = await axios.post(
                 back_api_url,
@@ -171,7 +156,6 @@ const uploadImageAct = (back_api_url, callback, options = {}) => {
                 },
             );
 
-            console.log(res);
             if (typeof callback === "function") {
                 callback(null, res.data);
             }

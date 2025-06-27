@@ -8,7 +8,6 @@ const mainRouter = express.Router();
 
 mainRouter.post('/chk_ex_file', async (req, res, next) => {
 
-    console.log('들어는 오는거니?!?!??!');
     
     let status = true;
     let chkDbBool = true; // DB가 있으면 true, 없으면 false;
@@ -71,7 +70,6 @@ mainRouter.post('/send_kakao_and_dbinput', async (req, res, next) => {
             managerPhone = getManagerPhone[0][0]['user_phone']
 
             var customerInfo = { ciPhone: managerPhone, ciSite: location, ciName: '추가DB', ciReceiver: userData }
-            console.log(customerInfo);
             aligoKakaoNotification_formanager(req, customerInfo)
         } catch (error) {
             console.error(error.message);
@@ -85,7 +83,6 @@ mainRouter.post('/send_kakao_and_dbinput', async (req, res, next) => {
 
 mainRouter.post('/update_normal', async (req, res) => {
     const updateList = req.body.copyList;
-    console.log(updateList);
 
     let normalVal = "접수완료";
     try {
@@ -95,8 +92,7 @@ mainRouter.post('/update_normal', async (req, res) => {
     } catch (error) {
 
     }
-
-    console.log(normalVal);
+    
     for (let i = 0; i < updateList.length; i++) {
         try {
             const data = updateList[i];
@@ -123,7 +119,6 @@ mainRouter.post('/load_minisite_info', async (req, res) => {
         const [minisiteDataRows] = await sql_con.promise().query(getMinisiteDataQuery, [hyId]);
         minisite_data = minisiteDataRows[0]
         if (!userStatus && !req.cookies.visit) {
-            console.log('들어와?!');
 
             let count = 1;
             if (Number(minisite_data.hy_counter) > 0) {
@@ -133,7 +128,6 @@ mainRouter.post('/load_minisite_info', async (req, res) => {
             await sql_con.promise().query(updateCounerPage, [count, minisite_data.hy_num]);
 
         } else {
-            console.log('안들어와?!');
         }
     } catch (err) {
         console.error(err.message);

@@ -25,12 +25,7 @@ let img_upload_set = multer({
     storage: multer.diskStorage({
         destination: (req, file, cb) => {
             const folder = req.body.folder || 'default';
-            console.log(__dirname);
-
-            console.log(folder);
-
             const uploadPath = path.join(__dirname, '..', 'subuploads', 'img', folder);
-            console.log(uploadPath);
 
             ensureDirectoryExistence(uploadPath);
             cb(null, uploadPath);
@@ -90,7 +85,6 @@ async function deleteImages(paths) {
                 await fs.remove(path);  // remove는 파일, 폴더 모두 삭제 가능
             })
         );
-        console.log('이미지 모두 삭제 완료!');
     } catch (err) {
         console.error('삭제 중 에러 발생:', err);
     }
@@ -119,7 +113,6 @@ subdomainRouter.post('/delete_site', async (req, res, next) => {
             for (const key in deleteData) {
                 const val = deleteData[key];
                 if (val && typeof val === 'string') {
-                    // console.log(val);
                     let imageUrls = val.match(/https?:\/\/[^\s'"]+\.(jpg|jpeg|png|webp|gif)(\?[^\s'"]*)?/gi);
                     if (imageUrls) {
                         imageUrls = splitArrayElement(imageUrls)
@@ -143,7 +136,6 @@ subdomainRouter.post('/delete_site', async (req, res, next) => {
         }
 
         try {
-            console.log('여기 아노아?');
             const deleteFolderPath = path.join(__dirname, '..', 'subuploads', 'img', deleteData.ld_domain);
             await fs.remove(deleteFolderPath);
         } catch (error) {
@@ -167,10 +159,7 @@ subdomainRouter.post('/delete_site', async (req, res, next) => {
 
 subdomainRouter.post('/copy_site', async (req, res, next) => {
 
-    console.log('안들어오니?');
-
     const body = req.body
-    console.log(body);
     let copyData = {}
 
     // 데이터 불러오기
@@ -187,16 +176,11 @@ subdomainRouter.post('/copy_site', async (req, res, next) => {
     const oldFolderPath = path.join(__dirname, '..', 'subuploads', 'img', body.oldDomain);
     const newFolderPath = path.join(__dirname, '..', 'subuploads', 'img', body.copyDomain);
 
-
-    console.log(fs.existsSync(oldFolderPath));
-
     try {
         if (fs.existsSync(oldFolderPath)) {
             fs.copySync(oldFolderPath, newFolderPath);
         }
     } catch (error) {
-        console.log('카피에서 에러 나나?');
-
         return res.status(400).json({ message: '중복된 아이디값(도메인)이 있습니다.' })
     }
 
@@ -240,7 +224,6 @@ subdomainRouter.post('/copy_site', async (req, res, next) => {
         delete copyData.ld_created_at;
 
         const queryStr = getQueryStr(copyData, 'insert', 'ld_created_at');
-        console.log(queryStr);
 
         const insertCopyData = `INSERT INTO land (${queryStr.str}) VALUES (${queryStr.question})`;
         await sql_con.promise().query(insertCopyData, queryStr.values);
@@ -366,8 +349,6 @@ subdomainRouter.post('/update_visit_count', async (req, res, next) => {
 
 
     const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    console.log('going to chkeck~~~~~~~~~~~~~~~~~~~~~~!!!!!!!!!!!!!!!!!!!!!!!!!');
-    console.log('방문자의 IP 주소:', ipAddress);
     if (ipAddress != process.env.SERVER_IP) {
 
         const userAgent = req.get('user-agent');
@@ -456,14 +437,12 @@ subdomainRouter.post('/img_upload', img_upload.single('onimg'), (req, res, next)
 
 subdomainRouter.post('/load_site_set', async (req, res, next) => {
     const body = req.body;
-    console.log(body);
 
     let siteSetData = {}
 
     try {
         const loadSiteSetQuery = `SELECT * FROM land WHERE ld_domain = ?`;
         const [loadSiteSet] = await sql_con.promise().query(loadSiteSetQuery, [body.getId]);
-        console.log(loadSiteSet);
         siteSetData = loadSiteSet[0]
 
     } catch (error) {
@@ -474,17 +453,10 @@ subdomainRouter.post('/load_site_set', async (req, res, next) => {
 })
 
 subdomainRouter.post('/update_site_set', async (req, res, next) => {
-    console.log('들어와써?!?!');
-
     const body = req.body;
-    console.log(body);
     try {
         const queryData = getQueryStr(body.uploadDataObj, 'update')
-        console.log(queryData);
         const updateSiteSetQuery = `UPDATE land SET ${queryData.str} WHERE ld_domain = ?`
-
-        console.log(updateSiteSetQuery);
-
         queryData.values.push(body.get_id)
         await sql_con.promise().query(updateSiteSetQuery, queryData.values);
 
@@ -498,11 +470,10 @@ subdomainRouter.post('/update_site_set', async (req, res, next) => {
 subdomainRouter.post('/delete_single_image_only', async (req, res, next) => {
 
     const delPath = req.body.deleteImagePath;
-    console.log(delPath);
 
     try {
         fs.unlink(delPath, (err) => {
-            console.log(err);
+            console.error(err);
         })
     } catch (error) {
         console.error(error);
@@ -515,7 +486,7 @@ subdomainRouter.post('/delete_many_image', async (req, res, next) => {
     deleteImgArr.forEach(delPath => {
         try {
             fs.unlink(delPath, (err) => {
-                console.log(err);
+                console.error(err);
             })
         } catch (error) {
             console.error(error);

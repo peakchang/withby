@@ -207,8 +207,6 @@
     }
 
     async function updateManageSite(e, getSite) {
-        console.log(e.target.value);
-        console.log(getSite);
 
         if (!getSite) {
             alert("연결할 담당자 사이트를 지정해주세요");
@@ -262,7 +260,6 @@
                             );
                             if (res.status == 200) {
                                 siteList = res.data.site_list;
-                                console.log(siteList);
                             }
                         } catch (error) {}
                     }}
@@ -315,7 +312,6 @@
                         );
                         if (res.status == 200) {
                             siteList = res.data.site_list;
-                            console.log(siteList);
                         }
                     } catch (error) {}
                     add_hy_modal.showModal();

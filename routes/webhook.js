@@ -22,7 +22,6 @@ var AuthData = {
 
 
 webhookRouter.get('/test', (req, res) => {
-    console.log(token);
 
     mailSender('changyong112@naver.com', '테스트 제목!!!', '테스트 컨텐츠!!!')
     const customerInfo = {
@@ -39,10 +38,8 @@ webhookRouter.get('/test', (req, res) => {
 
 webhookRouter.get('/aligo_sms_test', async (req, res) => {
 
-    console.log(req.body);
 
     // let datas = req.body;
-    // console.log(datas);
 
     req.body = {
         sender: '010-6628-6651',
@@ -52,9 +49,7 @@ webhookRouter.get('/aligo_sms_test', async (req, res) => {
     }
     try {
         const aligo_res = await aligoapi.send(req, AuthData)
-        console.log(aligo_res);
     } catch (err) {
-        console.log('여기 에러 나는거야?!?!?');
         console.error(err.message);
     }
     res.send('gogo')
@@ -134,7 +129,6 @@ webhookRouter.get('/test_rich_send', async (req, res) => {
 
 webhookRouter.post('/', async (req, res) => {
 
-    console.log('최초 진입!!!!');
 
 
     var getData = req.body
@@ -144,9 +138,6 @@ webhookRouter.post('/', async (req, res) => {
         // 핵심 부분!!! 페이스북에서 쏴주는거 제대로 받기!!!
         let leadsId = getData.entry[0].changes[0].value.leadgen_id
         let formId = getData.entry[0].changes[0].value.form_id
-
-        console.log(leadsId);
-        console.log(formId);
 
 
 
@@ -160,13 +151,8 @@ webhookRouter.post('/', async (req, res) => {
         let getFormData = JSON.parse(formData)
 
 
-        console.log(getLeadsData);
-        console.log(getFormData);
         
-        
-        // console.log(getLeadsData.field_data[0].values); // 1. 옵션
-        // console.log(getLeadsData.field_data[1].values); // 2. 이름
-        // console.log(getLeadsData.field_data[2].values); // 3. 전번
+
 
 
         // for문 돌려서 baseData 만들기!
@@ -206,7 +192,6 @@ webhookRouter.post('/', async (req, res) => {
 
             // 테스트 할때는 잠시 주석!!!
             if (chkFor2WeeksData[0].length > 0) {
-                console.log('중복DB 패스!!');
                 return res.sendStatus(200);
             }
         } catch (error) {
@@ -322,7 +307,6 @@ webhookRouter.post('/', async (req, res) => {
                 try {
                     aligoKakaoNotification_formanager(req, customerInfo)
                 } catch (error) {
-                    console.log('kakao send is error!!!! T.T');
                 }
 
 
@@ -339,7 +323,6 @@ webhookRouter.post('/', async (req, res) => {
 
                 // try {
                 //     const aligo_res = await aligoapi.send(req, AuthData)
-                //     console.log(aligo_res);
 
                 // } catch (err) {
                 //     console.error(err.message);
@@ -357,7 +340,6 @@ webhookRouter.post('/', async (req, res) => {
             const insertAuditWhdataSql = `INSERT INTO audit_webhook (audit_webhookdata) VALUES (?);`;
             await sql_con.promise().query(insertAuditWhdataSql, [getDataStr])
         } catch (error) {
-            console.log('audit_webhookdata error!!!!!!!!!!!');
 
         }
 
