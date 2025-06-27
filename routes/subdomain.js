@@ -201,6 +201,9 @@ subdomainRouter.post('/img_upload', img_upload.single('onimg'), (req, res, next)
 // ------------------------------------------ 시자악~
 
 subdomainRouter.post('/load_site_set', async (req, res, next) => {
+
+    console.log('siteset 불러오기 들어옴?!?!');
+    
     const body = req.body;
     console.log(body);
 
@@ -214,7 +217,6 @@ subdomainRouter.post('/load_site_set', async (req, res, next) => {
 
     } catch (error) {
         console.error(error.message);
-
     }
     res.json({ siteSetData })
 })
