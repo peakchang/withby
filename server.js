@@ -22,7 +22,7 @@ import { apiRouter } from "./routes/api.js"
 import { authRouter } from "./routes/auth.js"
 
 import { webhookRouter } from './routes/webhook.js';
-import { zapierRouter } from './routes/zaiper.js';
+import { zapierRouter } from './routes/zapier.js';
 
 import { subdomainRouter } from './routes/subdomain.js';
 
