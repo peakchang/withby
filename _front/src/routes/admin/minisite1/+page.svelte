@@ -14,6 +14,12 @@
     let nowPage = $state(0);
     let allPageCount = $state(0);
 
+    let siteListOpt = $state(data.siteList);
+
+    
+
+    
+
     // 카피할 아이디 및 창 보이게 bool
     let copyRawBool = $state(true);
     let copyId = $state("");
@@ -24,6 +30,10 @@
     // 현장 추가 변수
     let hy_num = $state("");
     let hy_site_name = $state("");
+
+    let siteList = $state([]);
+    let searchSite = $state("");
+    let hy_manage_site = $state("");
 
     // 수정 / 삭제 / 복사 체크 리스트
     let checkedList = $state([]);
@@ -62,6 +72,7 @@
             const res = await axios.post(`${back_api}/minisite/add_hy_site`, {
                 hy_num,
                 hy_site_name,
+                hy_manage_site,
             });
             if (res.status == 200) {
                 if (res.data.err_message) {
@@ -71,6 +82,7 @@
                 alert("현장 추가가 완료 되었습니다.");
                 hy_num = "";
                 hy_site_name = "";
+                hy_manage_site = "";
                 invalidateAll();
             } else {
             }
@@ -161,7 +173,12 @@
                 copyId = "";
                 invalidateAll();
             }
-        } catch (error) {}
+        } catch (err) {
+            console.error(err);
+            const m = err.response.data.message;
+            alert(m ? m : "에러가 발생 했습니다.");
+            return;
+        }
     }
 
     function movePage() {
@@ -188,6 +205,29 @@
 
         setParams({ page: setPage });
     }
+
+    async function updateManageSite(e, getSite) {
+        console.log(e.target.value);
+        console.log(getSite);
+
+        if (!getSite) {
+            alert("연결할 담당자 사이트를 지정해주세요");
+            return;
+        }
+
+        try {
+            const res = await axios.post(
+                `${back_api}/minisite/update_minisite_manager`,
+                {
+                    hy_id: e.target.value,
+                    get_site: getSite,
+                },
+            );
+            if (res.statsus == 200) {
+                invalidateAll();
+            }
+        } catch (error) {}
+    }
 </script>
 
 <dialog id="add_hy_modal" class="modal">
@@ -200,9 +240,51 @@
             현장명을 입력하세요
             <input type="text" class="input-base" bind:value={hy_site_name} />
         </div>
+
+        <div>
+            연결한 현장을 선택하세요 (DB 입력시 필요)
+
+            <div class="flex gap-2 mb-3">
+                <input
+                    type="text"
+                    class="w-full py-1.5 px-2 border border-gray-300 bg-gray-100 focus:outline-none focus:bg-white focus:border-blue-500 rounded-md"
+                    placeholder="현장 1차 검색, 필요할시에만"
+                    bind:value={searchSite}
+                />
+                <!-- svelte-ignore event_directive_deprecated -->
+                <button
+                    class="btn btn-xs md:btn-sm btn-success text-white"
+                    on:click={async () => {
+                        try {
+                            const res = await axios.post(
+                                `${back_api}/minisite/get_site_list`,
+                                { search_site: searchSite },
+                            );
+                            if (res.status == 200) {
+                                siteList = res.data.site_list;
+                                console.log(siteList);
+                            }
+                        } catch (error) {}
+                    }}
+                >
+                    검색
+                </button>
+            </div>
+
+            <select class="input-base" bind:value={hy_manage_site}>
+                {#each siteList as site}
+                    <option value={site.sl_site_name}>
+                        {site.sl_site_name}
+                    </option>
+                {/each}
+            </select>
+        </div>
+
         <div class="modal-action">
             <form method="dialog">
                 <!-- if there is a button in form, it will close the modal -->
+                <!-- svelte-ignore event_directive_deprecated -->
+                <!-- svelte-ignore event_directive_deprecated -->
                 <button class="btn" on:click={addHySite}>적용</button>
             </form>
         </div>
@@ -210,7 +292,7 @@
 </dialog>
 
 <div class="">
-    <div class="pb-5 w-full md:w-1/2 flex gap-4">
+    <div class="pb-5 w-full flex gap-4">
         <div class="flex items-center gap-2">
             <input type="text" class="input-base" bind:value={searchVal} />
             <!-- svelte-ignore event_directive_deprecated -->
@@ -222,20 +304,34 @@
             </button>
         </div>
         <div class="flex justify-center items-center gap-2">
+            <!-- svelte-ignore event_directive_deprecated -->
+            <!-- svelte-ignore event_directive_deprecated -->
             <button
                 class="btn btn-xs md:btn-sm btn-success"
-                on:click={() => {
+                on:click={async () => {
+                    try {
+                        const res = await axios.post(
+                            `${back_api}/minisite/get_site_list`,
+                        );
+                        if (res.status == 200) {
+                            siteList = res.data.site_list;
+                            console.log(siteList);
+                        }
+                    } catch (error) {}
                     add_hy_modal.showModal();
                 }}
             >
                 현장추가
             </button>
+            <!-- svelte-ignore event_directive_deprecated -->
             <button class="btn btn-xs md:btn-sm btn-info" on:click={updateRaw}>
                 수정
             </button>
+            <!-- svelte-ignore event_directive_deprecated -->
             <button class="btn btn-xs md:btn-sm btn-error" on:click={deleteRaw}>
                 삭제
             </button>
+            <!-- svelte-ignore event_directive_deprecated -->
             <button
                 class="btn btn-xs md:btn-sm btn-warning"
                 on:click={() => {
@@ -252,6 +348,7 @@
                     placeholder="아이디값을 입력하세요"
                     bind:value={copyId}
                 />
+                <!-- svelte-ignore event_directive_deprecated -->
                 <button
                     class="btn btn-xs md:btn-sm btn-success text-white"
                     on:click={copyHyData}
@@ -266,6 +363,7 @@
             <tr>
                 <th class="in-th w-14">
                     <div class="flex justify-center items-center">
+                        <!-- svelte-ignore event_directive_deprecated -->
                         <input
                             type="checkbox"
                             class="checkbox checkbox-xs md:checkbox-sm"
@@ -276,6 +374,7 @@
                 </th>
                 <th class="in-th"> 아이디 </th>
                 <th class="in-th"> 현장명 </th>
+                <th class="in-th"> 담당연결 </th>
                 <th class="in-th"> 바로보기 </th>
                 <th class="in-th"> 조회수 </th>
             </tr>
@@ -285,6 +384,7 @@
                 <tr>
                     <td class="in-td py-3">
                         <div class="flex justify-center items-center">
+                            <!-- svelte-ignore event_directive_deprecated -->
                             <input
                                 type="checkbox"
                                 value={idx}
@@ -332,6 +432,36 @@
                             </button>
                         </div>
                     </td>
+
+                    <td class="in-td w-56">
+                        <!-- svelte-ignore a11y_click_events_have_key_events -->
+                        <!-- svelte-ignore a11y_no_static_element_interactions -->
+                        <!-- svelte-ignore event_directive_deprecated -->
+                        <div class="flex gap-2 items-center px-2">
+                            <select
+                                class="border py-1 px-2 rounded-md w-36"
+                                bind:value={minisiteData[idx].hy_manage_site}
+                            >
+                                {#each siteListOpt as siteOpt}
+                                    <option value={siteOpt.sl_site_name}>
+                                        {siteOpt.sl_site_name}
+                                    </option>
+                                {/each}
+                            </select>
+                            <button
+                                class="btn btn-success btn-xs text-white"
+                                value={minisiteData[idx].hy_id}
+                                on:click={(e) => {
+                                    const getSite =
+                                        minisiteData[idx].hy_manage_site;
+                                    updateManageSite(e, getSite);
+                                }}
+                            >
+                                수정
+                            </button>
+                        </div>
+                    </td>
+
                     <td class="in-td">
                         <a
                             href="/side/{minisiteData[idx].hy_num}"
@@ -353,6 +483,7 @@
 
 <div class="flex justify-center items-center my-5 gap-1">
     <!-- svelte-ignore a11y_consider_explicit_label -->
+    <!-- svelte-ignore event_directive_deprecated -->
     <button
         class="page-btn w-8 h-8 text-sm border rounded-md"
         value="first_page"
@@ -361,6 +492,7 @@
         <i class="fa fa-angle-double-left" aria-hidden="true"></i>
     </button>
     <!-- svelte-ignore a11y_consider_explicit_label -->
+    <!-- svelte-ignore event_directive_deprecated -->
     <button
         class="page-btn w-8 h-8 text-sm border rounded-md"
         value="prev"
@@ -387,6 +519,7 @@
         {/if}
     {/each}
     <!-- svelte-ignore a11y_consider_explicit_label -->
+    <!-- svelte-ignore event_directive_deprecated -->
     <button
         class="page-btn w-8 h-8 text-sm border rounded-md"
         value="next"
@@ -395,6 +528,7 @@
         <i class="fa fa-angle-right" aria-hidden="true"></i>
     </button>
     <!-- svelte-ignore a11y_consider_explicit_label -->
+    <!-- svelte-ignore event_directive_deprecated -->
     <button
         class="page-btn w-8 h-8 text-sm border rounded-md"
         value="last_page"

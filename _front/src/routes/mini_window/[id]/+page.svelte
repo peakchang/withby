@@ -1,5 +1,5 @@
 <script>
-    import SortableImgsDrag from "$src/lib/components/SortableImgsDrag.svelte";
+    import SortImg from "$src/lib/components/SortImg.svelte";
     import OneImg from "$src/lib/components/OneImg.svelte";
     import { page } from "$app/stores";
     import axios from "axios";
@@ -16,17 +16,14 @@
         modifyImgArr = data.hyData.hy_image_list.split(",");
     }
 
-    $effect(() => {});
-    function updateImg(e) {
-        hyData.hy_image_list = e.join(",");
+    function imageUpdate(e) {
+        hyData[e.value] = e.saveUrl;
+        console.log(hyData);
     }
 
-    function cardImageUpload(e) {
-        hyData.hy_card_image = e;
-    }
-
-    function mainImageUpload(e) {
-        hyData.hy_main_image = e;
+    function updateImgList(e) {
+        const tempImgArr = e.map((val) => val.href);
+        hyData["hy_image_list"] = tempImgArr.join(",");
     }
 
     async function updateHySite() {
@@ -49,6 +46,7 @@
         <div class="pb-3 text-base flex justify-between">
             <span> 현장명 수정 페이지 </span>
 
+            <!-- svelte-ignore a11y_consider_explicit_label -->
             <button>
                 <i class="fa fa-times" aria-hidden="true"></i>
             </button>
@@ -243,9 +241,11 @@
                 <td class="in-td">
                     <div>
                         <OneImg
-                            updateImg={cardImageUpload}
+                            value={"hy_card_image"}
+                            updateImg={imageUpdate}
                             imgFolder={hyData.hy_num}
                             imageLink={hyData.hy_card_image}
+                            btnSize={"sm"}
                         ></OneImg>
                     </div>
                 </td>
@@ -257,9 +257,11 @@
                 <td class="in-td">
                     <div>
                         <OneImg
-                            updateImg={mainImageUpload}
+                            value={"hy_main_image"}
+                            updateImg={imageUpdate}
                             imgFolder={hyData.hy_num}
                             imageLink={hyData.hy_main_image}
+                            btnSize={"sm"}
                         ></OneImg>
                     </div>
                 </td>
@@ -268,12 +270,12 @@
     </table>
     <div class="mt-3 p-3 border rounded-md">
         <div class="mb-3 font-semibold">이미지 리스트</div>
-        <SortableImgsDrag
-            {updateImg}
+        <SortImg
+            updateImg={updateImgList}
             imgFolder={hyData.hy_num}
             btnLocation="center"
             imgModifyList={modifyImgArr}
-        ></SortableImgsDrag>
+        ></SortImg>
     </div>
 
     <div class="my-5">
@@ -287,12 +289,15 @@
             >
                 업데이트
             </button>
+            <!-- svelte-ignore event_directive_deprecated -->
             <button
                 class="btn min-h-9 h-9"
                 on:click={() => {
                     window.close();
-                }}>닫기</button
+                }}
             >
+                닫기
+            </button>
         </div>
     </div>
 </div>

@@ -1,14 +1,45 @@
 import express from "express";
-import fs from 'fs';
+import fs from 'fs-extra';
+import path from "path";
+
 import multer from "multer";
 import { sql_con } from '../back-lib/db.js'
 import { getQueryStr, aligoKakaoNotification_formanager, aligoKakaoNotification_detail } from '../back-lib/lib.js';
+
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+import { processImageFile } from "../back-lib/processImageFile.js";
+
 import moment from "moment-timezone";
 moment.tz.setDefault("Asia/Seoul");
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 
 const subdomainRouter = express.Router();
+
+
+let img_upload_set = multer({
+    storage: multer.diskStorage({
+        destination: (req, file, cb) => {
+            const folder = req.body.folder || 'default';
+            console.log(__dirname);
+
+            console.log(folder);
+
+            const uploadPath = path.join(__dirname, '..', 'subuploads', 'img', folder);
+            console.log(uploadPath);
+
+            ensureDirectoryExistence(uploadPath);
+            cb(null, uploadPath);
+        },
+        filename: (req, file, cb) => {
+            cb(null, file.originalname);
+        }
+    })
+})
 
 let img_upload = multer({
     storage: multer.diskStorage({
@@ -25,11 +56,232 @@ let img_upload = multer({
     // limits: { fileSize: 10 * 1024 * 1024 },
 });
 
+// 폴더 존재 여부 확인 및 생성
+const ensureDirectoryExistence = (folderPath) => {
+    if (!fs.existsSync(folderPath)) {
+        fs.mkdirSync(folderPath, { recursive: true });
+    }
+};
+
+
+// 이미지 업로드 부분!! (단일 이미지)
+subdomainRouter.post('/img_upload_set', img_upload_set.single('onimg'), (req, res, next) => {
+    let saveUrl = ""
+
+    saveUrl = `/subimg/${req.body.folder}/${req.file.originalname}`
+
+    res.json({ saveUrl })
+})
+
+
+// 사이트 삭제 부분!!!
+// 배열 첫번째에 다 몰리는 경우가 있어서 ㅠ 나눠주는 함수!
+function splitArrayElement(arr) {
+    if (arr.length === 1 && typeof arr[0] === 'string') {
+        return arr[0].split(',');
+    }
+    return arr;
+}
+// 절대경로로 이루어진 배열 내 이미지 경로 병렬로 삭제하는 함수!
+async function deleteImages(paths) {
+    try {
+        await Promise.all(
+            paths.map(async (path) => {
+                await fs.remove(path);  // remove는 파일, 폴더 모두 삭제 가능
+            })
+        );
+        console.log('이미지 모두 삭제 완료!');
+    } catch (err) {
+        console.error('삭제 중 에러 발생:', err);
+    }
+}
+
+subdomainRouter.post('/delete_site', async (req, res, next) => {
+    const deleteList = req.body.checkedList;
+
+    for (let i = 0; i < deleteList.length; i++) {
+        const d = deleteList[i];
+        let deleteData = {}
+
+        try {
+            const getDeleteDataQuery = "SELECT * FROM land WHERE ld_id = ?"
+            const [getDeleteData] = await sql_con.promise().query(getDeleteDataQuery, [d]);
+            deleteData = getDeleteData[0]
+        } catch (error) {
+            return res.status(400).json({ message: '데이터 불러오기 에러!' })
+        }
+
+        try {
+            // 폴더에 셋팅 되어 있는 경우 말고 구버전 (http 포함) 이미지 삭제하기!!
+            let delImgList = [];
+            let delImgListTemp = [];
+
+            for (const key in deleteData) {
+                const val = deleteData[key];
+                if (val && typeof val === 'string') {
+                    // console.log(val);
+                    let imageUrls = val.match(/https?:\/\/[^\s'"]+\.(jpg|jpeg|png|webp|gif)(\?[^\s'"]*)?/gi);
+                    if (imageUrls) {
+                        imageUrls = splitArrayElement(imageUrls)
+                        delImgListTemp = [...delImgListTemp, imageUrls]
+                    }
+                }
+            }
+            if (delImgListTemp.length > 0) {
+                delImgListTemp = delImgListTemp.flat();
+                for (let i = 0; i < delImgListTemp.length; i++) {
+                    const t = delImgListTemp[i].split('/');
+                    const deletePath = path.join(__dirname, '..', 'subuploads', 'img', t[t.length - 2], t[t.length - 1]);
+                    delImgList.push(deletePath)
+                }
+                deleteImages(delImgList)
+            }
+            // 구버전 이미지 삭제 끝!!
+
+        } catch (error) {
+            console.error(error.message);
+        }
+
+        try {
+            console.log('여기 아노아?');
+            const deleteFolderPath = path.join(__dirname, '..', 'subuploads', 'img', deleteData.ld_domain);
+            await fs.remove(deleteFolderPath);
+        } catch (error) {
+            console.error(error.message);
+        }
+
+        try {
+            const deleteQuery = "DELETE FROM land WHERE ld_id = ?"
+            await sql_con.promise().query(deleteQuery, [d]);
+        } catch (error) {
+            return res.status(400).json({ message: '이미지 삭제 에러! 다시 시도해주세요!' })
+        }
+    }
+
+    return res.json({})
+})
+
+
+
+// 사이트 카피 부분!!!
+
+subdomainRouter.post('/copy_site', async (req, res, next) => {
+
+    console.log('안들어오니?');
+
+    const body = req.body
+    console.log(body);
+    let copyData = {}
+
+    // 데이터 불러오기
+    try {
+        const getCopyDataQuery = "SELECT * FROM land WHERE ld_domain = ?";
+        const [getCopyData] = await sql_con.promise().query(getCopyDataQuery, [body.oldDomain]);
+        copyData = getCopyData[0]
+    } catch (error) {
+        return res.status(400).json({ message: '데이터 불러오기 실패! 다시 시도해주세요!' })
+    }
+
+    // 기존 폴더 있는지 체크
+
+    const oldFolderPath = path.join(__dirname, '..', 'subuploads', 'img', body.oldDomain);
+    const newFolderPath = path.join(__dirname, '..', 'subuploads', 'img', body.copyDomain);
+
+
+    console.log(fs.existsSync(oldFolderPath));
+
+    try {
+        if (fs.existsSync(oldFolderPath)) {
+            fs.copySync(oldFolderPath, newFolderPath);
+        }
+    } catch (error) {
+        console.log('카피에서 에러 나나?');
+
+        return res.status(400).json({ message: '중복된 아이디값(도메인)이 있습니다.' })
+    }
+
+
+    try {
+
+        // 불러온 데이터 가공 & 구버전 이미지 복붙 하기!
+        for (const key in copyData) {
+            const val = copyData[key];
+            if (val && typeof val === 'string') {
+                if (copyData[key].includes('http') && copyData[key].includes('img')) {
+                    const imageUrls = copyData[key].match(/https?:\/\/[^\s'"]+\.(jpg|jpeg|png|webp|gif)(\?[^\s'"]*)?/gi);
+                    if (imageUrls) {
+                        for (let i = 0; i < imageUrls.length; i++) {
+                            try {
+                                const us = imageUrls[i].split('/');
+                                // 기존 이미지 절대경로 따기
+                                const oldImagePath = path.join(__dirname, '..', 'subuploads', 'img', us[us.length - 2], us[us.length - 1]);
+                                // 이미지 복붙 하기
+                                const newImagePath = path.join(__dirname, '..', 'subuploads', 'img', body.copyDomain, us[us.length - 1]);
+                                fs.copyFileSync(oldImagePath, newImagePath);
+
+                                // 기존 데이터를 새로운 경로 데이터로 변경하기
+                                const newPath = `/subimg/${body.copyDomain}/${us[us.length - 1]}`
+                                copyData[key] = copyData[key].replace(imageUrls[i], newPath)
+                            } catch (error) {
+                                console.error(error.message);
+
+                            }
+
+                        }
+                    }
+
+                } else if (copyData[key].includes(body.oldDomain)) {
+                    copyData[key] = copyData[key].replaceAll(body.oldDomain, body.copyDomain)
+                }
+            }
+        }
+
+        delete copyData.ld_id;
+        delete copyData.ld_created_at;
+
+        const queryStr = getQueryStr(copyData, 'insert', 'ld_created_at');
+        console.log(queryStr);
+
+        const insertCopyData = `INSERT INTO land (${queryStr.str}) VALUES (${queryStr.question})`;
+        await sql_con.promise().query(insertCopyData, queryStr.values);
+
+
+    } catch (error) {
+        console.error(error.message);
+
+        return res.status(400).json({ message: '중복된 아이디값(도메인)이 있습니다.' })
+
+    }
+
+
+    // const getOldFolder = `./public/uploads/image/${body.copyData.hy_num}`
+    //         const getNewFolder = `./public/uploads/image/${body.copyId}`;
+    //         if (fs.existsSync(getOldFolder)) {
+    //             fs.copySync(getOldFolder, getNewFolder);
+    //         } else {
+    //         }
+
+    // >> 기존폴더 있으면 복사
+
+    // 데이터 가공
+    // 혹시 모르니까 돌면서 겸사겸사 구버전 (http 붙어있는거) 이미지 경로 체크, 있으면 리스트 만들어서 복붙 밑 문자열 변경 해주기
+    // 1. 리스트로 변환 / 2. 새 값으로 만들기 / 3. 직접적으로 하나씩 replace >> 저장
+
+
+
+
+
+    return res.json({})
+})
+
+
+
+
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 여기는 visit!!!!!!!!!!!!!!!
 
 subdomainRouter.post('/get_visit_list', async (req, res, next) => {
     let status = true;
-    console.log(req.body.getId);
+
     let visit_list = [];
     try {
         const getVisitListQuery = "SELECT * FROM subdomain_visit WHERE sv_domain = ? ORDER BY sv_id DESC"
@@ -87,8 +339,8 @@ subdomainRouter.post('/add_sms_count', async (req, res, next) => {
 })
 
 subdomainRouter.post('/subview', async (req, res, next) => {
-    console.log('일단 들어오지?!?!?!');
-    
+
+
     let status = true;
     const subDomainName = req.body.subDomainName
     let subView = "";
@@ -100,8 +352,7 @@ subdomainRouter.post('/subview', async (req, res, next) => {
 
     }
 
-    console.log(subView);
-    
+
 
     res.json({ status, subDomainName, subView })
 })
@@ -112,9 +363,7 @@ subdomainRouter.post('/update_visit_count', async (req, res, next) => {
     let status = true;
 
     const body = req.body;
-    console.log(body);
 
-    console.log(process.env.SERVER_IP);
 
     const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     console.log('going to chkeck~~~~~~~~~~~~~~~~~~~~~~!!!!!!!!!!!!!!!!!!!!!!!!!');
@@ -122,7 +371,7 @@ subdomainRouter.post('/update_visit_count', async (req, res, next) => {
     if (ipAddress != process.env.SERVER_IP) {
 
         const userAgent = req.get('user-agent');
-        console.log(userAgent);
+
 
         const ldVisitCount = body.ld_visit_count + 1;
         try {
@@ -179,6 +428,10 @@ subdomainRouter.post('/upload_data', async (req, res, next) => {
     res.json({ status })
 })
 
+
+
+
+
 subdomainRouter.post('/img_upload', img_upload.single('onimg'), (req, res, next) => {
     let status = true;
     let baseUrl
@@ -198,12 +451,10 @@ subdomainRouter.post('/img_upload', img_upload.single('onimg'), (req, res, next)
     res.json({ status, baseUrl, saveUrl })
 })
 
+
 // ------------------------------------------ 시자악~
 
 subdomainRouter.post('/load_site_set', async (req, res, next) => {
-
-    console.log('siteset 불러오기 들어옴?!?!');
-    
     const body = req.body;
     console.log(body);
 
@@ -217,6 +468,7 @@ subdomainRouter.post('/load_site_set', async (req, res, next) => {
 
     } catch (error) {
         console.error(error.message);
+
     }
     res.json({ siteSetData })
 })
@@ -295,13 +547,14 @@ subdomainRouter.post('/delete_single_image', async (req, res, next) => {
 
 
 
+
 subdomainRouter.post('/delete_img', async (req, res, next) => {
     let status = true;
     const body = req.body;
     const delPath = `subuploads/img/${body.getFolder}/${body.getImgName}`
     try {
         await fs.unlink(delPath, (err) => {
-            console.error(err.message);
+            console.error(err);
         })
     } catch (error) {
         status = false
@@ -312,9 +565,9 @@ subdomainRouter.post('/delete_img', async (req, res, next) => {
 
 subdomainRouter.post('/update_customer', async (req, res, next) => {
     let status = true;
-    console.log('update_customer!!!!!!!!!!!!!!!!!');
+
     const body = req.body;
-    console.log(body);
+
     const now = moment().format('YY/MM/DD HH:mm:ss');
     try {
         // DB 입력하기~~~
@@ -347,8 +600,7 @@ subdomainRouter.post('/update_customer', async (req, res, next) => {
         const getSiteInfoQuery = "SELECT * FROM site_list WHERE sl_site_name = ?";
         const getSiteInfo = await sql_con.promise().query(getSiteInfoQuery, [body.siteName]);
         const site_info = getSiteInfo[0][0]
-        console.log("get~~~~~~~~~~~ site~~~~~~~~~~ info~~~~~~~~~~~~");
-        console.log(site_info);
+
         if (site_info) {
             let sendMessageObj = {
                 receiver: body.phone,
@@ -357,7 +609,7 @@ subdomainRouter.post('/update_customer', async (req, res, next) => {
                 siteRealName: site_info['sl_site_realname'],
                 smsContent: site_info['sl_sms_content'],
             }
-            console.log(sendMessageObj);
+
             aligoKakaoNotification_detail(req, sendMessageObj)
         }
     } catch (error) {
@@ -399,6 +651,7 @@ function imgFolderChk() {
 
     return setFolder;
 }
+
 
 export { subdomainRouter }
 

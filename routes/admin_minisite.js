@@ -13,6 +13,20 @@ const __dirname = dirname(__filename);
 
 const minisiteRouter = express.Router();
 
+// 여기 0409 추가한 부분!!!! 사이트 타입 조절!!!
+minisiteRouter.post('/update_site_type', async (req, res) => {
+    const body = req.body;
+    try {
+        const updateTypeQuery = "UPDATE land SET ld_view_type = ? WHERE ld_id = ?";
+        await sql_con.promise().query(updateTypeQuery, [body.ld_view_type, body.ld_id]);
+    } catch (error) {
+
+    }
+    res.json({})
+
+})
+// 끝!!!
+
 minisiteRouter.post('/add_sub_domain', async (req, res) => {
     const body = req.body;
 
@@ -246,6 +260,9 @@ minisiteRouter.post('/load_minisite', async (req, res) => {
     const nowPage = req.body.nowPage || 1;
     const search = req.body.search || "";
     let searchStr = "";
+
+
+    let site_list = [];
     if (search) {
         searchStr = `WHERE hy_title LIKE '%${search}%'`;
     }
@@ -259,18 +276,44 @@ minisiteRouter.post('/load_minisite', async (req, res) => {
         const startCount = (nowPage - 1) * onePageCount;
 
 
-        const getMinisite1Query = `SELECT hy_id,hy_num,hy_title,hy_counter FROM hy_site ${searchStr} ORDER BY hy_id DESC LIMIT ${startCount}, ${onePageCount}`;
+        const getMinisite1Query = `SELECT hy_id,hy_num,hy_title,hy_manage_site,hy_counter FROM hy_site ${searchStr} ORDER BY hy_id DESC LIMIT ${startCount}, ${onePageCount}`;
         const [miniSiteRows] = await sql_con.promise().query(getMinisite1Query);
         minisiteData = miniSiteRows;
+
+
+
+        const getSiteListQuery = "SELECT sl_id, sl_site_name FROM site_list ORDER BY sl_id DESC";
+        [site_list] = await sql_con.promise().query(getSiteListQuery);
     } catch (err) {
         console.error(err.message);
     }
 
-    res.json({ minisiteData, allPage })
+    res.json({ minisiteData, allPage, site_list })
 })
 
 minisiteRouter.get('/', (req, res) => {
     res.send('asldfjalisjdfliajsdf')
+})
+
+
+
+// 사이트 리스트 불러오기! (hy_site / hy_site_one 페이지 두개 동일하게 쓰는중!)
+minisiteRouter.post('/get_site_list', async (req, res) => {
+    let site_list = [];
+    const searchSite = req.body.search_site
+    let addQuery = ""
+    if (searchSite) {
+        addQuery = `WHERE sl_site_name LIKE '%${searchSite}%'`
+    }
+    try {
+        const getSiteListQuery = `SELECT sl_id,sl_site_name FROM site_list ${addQuery} ORDER BY sl_id DESC`;
+        [site_list] = await sql_con.promise().query(getSiteListQuery);
+
+    } catch (error) {
+
+    }
+
+    res.json({ site_list })
 })
 
 
