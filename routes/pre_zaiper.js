@@ -6,7 +6,7 @@ import { aligoKakaoNotification_detail, aligoKakaoNotification_formanager } from
 import moment from "moment-timezone";
 moment.tz.setDefault("Asia/Seoul");
 
-const zapierRouter = express.Router();
+// const zapierRouter = express.Router();
 const AuthData = {
     key: 'jt7j3tl1dopaogmoauhoc68wrry0wswc',
     // 이곳에 발급받으신 api key를 입력하세요
@@ -206,4 +206,4 @@ zapierRouter.post('/', async (req, res) => {
 
 
 
-export { zapierRouter }
+// export { zapierRouter }
