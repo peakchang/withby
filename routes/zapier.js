@@ -204,7 +204,23 @@ zapierRouter.post('/', async (req, res) => {
                     }
 
                     const result = await aligoapi.token(req, AuthData);
-                    req.body = {
+                    // req.body = {
+                    //     senderkey: process.env.ALIGO_SENDERKEY,
+                    //     token: result.token,
+                    //     tpl_code: 'UA_7459',
+                    //     sender: '010-6628-6651',
+                    //     receiver_1: managerPhone,
+                    //     subject_1: '분양정보 신청고객 알림톡',
+                    //     message_1: `${customerInfo.ciSite}고객 유입 알림!\n\n고객명:${customerInfo.ciName}\n연락처:${customerInfo.ciReceiver}\n\n※ 상담 대기 상태입니다.\n빠르게 컨택 진행 부탁 드립니다.`,
+                    //     button_1: {
+                    //         "button": [{
+                    //             "name": "채널 추가",
+                    //             "linkType": "AC"
+                    //         }]
+                    //     }
+                    // }
+
+                    const aligo_res = await aligoapi.alimtalkSend({
                         senderkey: process.env.ALIGO_SENDERKEY,
                         token: result.token,
                         tpl_code: 'UA_7459',
@@ -218,9 +234,7 @@ zapierRouter.post('/', async (req, res) => {
                                 "linkType": "AC"
                             }]
                         }
-                    }
-
-                    const aligo_res = await aligoapi.alimtalkSend(req, AuthData)
+                    }, AuthData)
                     console.log(`알리고 발송 : ${aligo_res.message}`);
                 } catch (err) {
                     console.error(err.message);
