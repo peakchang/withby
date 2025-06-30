@@ -135,6 +135,9 @@ zapierRouter.post('/', async (req, res) => {
 
         await sql_con.promise().query(formInertSql, values)
 
+        console.log('chk1');
+        
+
         // 해당 폼네임에 저장된 담당자 리스트 찾기
         const userFindSql = `SELECT * FROM users WHERE manage_estate LIKE '%${reFormName}%';`;
         const findUserData = await sql_con.promise().query(userFindSql);
@@ -147,6 +150,7 @@ zapierRouter.post('/', async (req, res) => {
         //     mailSender(goUser.user_email, mailSubjectManager, mailContentManager);
         // }
 
+        console.log('chk2');
         // 최고관리자에게 이메일 발송
         const mailSubject = `(위드분양 접수) ${reFormName} 고객명 ${dbName} 접수되었습니다.`;
         const mailContent = `현장: ${reFormName} / 이름 : ${dbName} / 전화번호 : ${get_phone} ${addEtcMessage}`;
@@ -155,6 +159,7 @@ zapierRouter.post('/', async (req, res) => {
         // mailSender('slkym@naver.com', mailSubject, mailContent);
 
 
+        console.log('chk3');
         // 현장명 찾기!!!
         const getSiteInfoSql = `SELECT * FROM site_list WHERE sl_site_name = ?`
         const getSiteInfoData = await sql_con.promise().query(getSiteInfoSql, [reFormName])
@@ -169,7 +174,7 @@ zapierRouter.post('/', async (req, res) => {
 
         const receiverStr = `${get_phone} ${addEtcMessage}`
 
-
+        console.log('chk4');
         const cleanText = dbName.replace(/[^\w\s.,!@#$%^&*()_\-+=\[\]{}|;:'"<>?\\/가-힣]/g, '');
         const containsKoreanOrEnglish = /[A-Za-z\uAC00-\uD7A3]/.test(cleanText);
 
@@ -179,6 +184,7 @@ zapierRouter.post('/', async (req, res) => {
             dbName = '성함 미입력'
         }
 
+        console.log('chk5');
         var customerInfo = { ciName: dbName, ciCompany: '위드분양', ciSite: getSiteInfo.sl_site_name, ciSiteLink: siteList, ciReceiver: receiverStr }
 
         // 매니저한테 알림톡 / 문자 발송
@@ -194,6 +200,8 @@ zapierRouter.post('/', async (req, res) => {
                 }
             }
         }
+
+        console.log('chk6');
         // 알림톡 발송 끝~~~~
         return res.sendStatus(200);
 
