@@ -63,9 +63,11 @@ zapierRouter.post('/', async (req, res) => {
 
             // 테스트때는 잠시 주석!
             if (chkFor2WeeksData[0].length > 0) {
+
                 return res.sendStatus(200);
             }
         } catch (error) {
+            console.log('그냥 에러지?');
             console.error(error.message);
         }
 
@@ -122,6 +124,9 @@ zapierRouter.post('/', async (req, res) => {
         // }
 
         const values = [reFormName, '분양', 'FB', dbName, get_phone, '', nowStr]
+
+        console.log(values);
+        
 
         // 폼 insert 하기!!
         const formInertSql = `INSERT INTO application_form (af_form_name, af_form_type_in, af_form_location, af_mb_name, af_mb_phone, af_mb_status ${etcInsertStr}, af_created_at) VALUES (?,?,?,?,?,? ${etcValuesStr},?);`;
@@ -193,6 +198,8 @@ zapierRouter.post('/', async (req, res) => {
         return res.sendStatus(200);
 
     } catch (err) {
+        console.log('에러나는거야?');
+        
         console.error(err.message);
         status = false;
     }
