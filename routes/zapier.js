@@ -126,7 +126,7 @@ zapierRouter.post('/', async (req, res) => {
         const values = [reFormName, '분양', 'FB', dbName, get_phone, '', nowStr]
 
         console.log(values);
-        
+
 
         // 폼 insert 하기!!
         const formInertSql = `INSERT INTO application_form (af_form_name, af_form_type_in, af_form_location, af_mb_name, af_mb_phone, af_mb_status ${etcInsertStr}, af_created_at) VALUES (?,?,?,?,?,? ${etcValuesStr},?);`;
@@ -136,7 +136,7 @@ zapierRouter.post('/', async (req, res) => {
         await sql_con.promise().query(formInertSql, values)
 
         console.log('chk1');
-        
+
 
         // 해당 폼네임에 저장된 담당자 리스트 찾기
         const userFindSql = `SELECT * FROM users WHERE manage_estate LIKE '%${reFormName}%';`;
@@ -178,14 +178,15 @@ zapierRouter.post('/', async (req, res) => {
         const cleanText = dbName.replace(/[^\w\s.,!@#$%^&*()_\-+=\[\]{}|;:'"<>?\\/가-힣]/g, '');
         const containsKoreanOrEnglish = /[A-Za-z\uAC00-\uD7A3]/.test(cleanText);
 
+        let resDbName = ""
         if (containsKoreanOrEnglish) {
-            dbName = cleanText
+            resDbName = cleanText
         } else {
-            dbName = '성함 미입력'
+            resDbName = '성함 미입력'
         }
 
         console.log('chk5');
-        var customerInfo = { ciName: dbName, ciCompany: '위드분양', ciSite: getSiteInfo.sl_site_name, ciSiteLink: siteList, ciReceiver: receiverStr }
+        var customerInfo = { ciName: resDbName, ciCompany: '위드분양', ciSite: getSiteInfo.sl_site_name, ciSiteLink: siteList, ciReceiver: receiverStr }
 
         // 매니저한테 알림톡 / 문자 발송
         for (let oo = 0; oo < findUser.length; oo++) {
@@ -207,7 +208,7 @@ zapierRouter.post('/', async (req, res) => {
 
     } catch (err) {
         console.log('에러나는거야?');
-        
+
         console.error(err.message);
         status = false;
     }
