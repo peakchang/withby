@@ -1,5 +1,5 @@
 import express from "express";
-
+import aligoapi from 'aligoapi'
 import { mailSender } from "../back-lib/lib.js";
 import { sql_con } from "../back-lib/db.js";
 import { aligoKakaoNotification_detail, aligoKakaoNotification_formanager } from "../back-lib/lib.js";
@@ -120,7 +120,7 @@ zapierRouter.post('/', async (req, res) => {
 
         const values = [reFormName, '분양', 'FB', dbName, get_phone, '', nowStr]
 
-        
+
 
         // 폼 insert 하기!!
         const formInertSql = `INSERT INTO application_form (af_form_name, af_form_type_in, af_form_location, af_mb_name, af_mb_phone, af_mb_status ${etcInsertStr}, af_created_at) VALUES (?,?,?,?,?,? ${etcValuesStr},?);`;
@@ -128,7 +128,7 @@ zapierRouter.post('/', async (req, res) => {
 
         await sql_con.promise().query(formInertSql, values)
 
-        
+
 
         // 해당 폼네임에 저장된 담당자 리스트 찾기
         const userFindSql = `SELECT * FROM users WHERE manage_estate LIKE '%${reFormName}%';`;
@@ -177,17 +177,45 @@ zapierRouter.post('/', async (req, res) => {
         var customerInfo = { ciName: resDbName, ciCompany: '위드분양', ciSite: getSiteInfo.sl_site_name, ciSiteLink: siteList, ciReceiver: receiverStr }
 
         console.log(customerInfo);
-        
+
         // 매니저한테 알림톡 / 문자 발송
         for (let oo = 0; oo < findUser.length; oo++) {
             const managerPhone = findUser[oo].user_phone
             if (managerPhone.includes('010')) {
                 customerInfo['ciPhone'] = managerPhone
-                try {
-                    aligoKakaoNotification_formanager(req, customerInfo)
-                } catch (e) {
-                    console.error(e.message);
+
+                const resMessage = `탑분양 고객 인입 안내! ${getSiteInfo.sl_site_name} 현장 / ${dbName}님 접수되었습니다! 고객 번호 : ${receiverStr}`
+                console.log('문자 발송 부분!!!');
+                console.log(`receiver : ${managerPhone}`);
+                console.log(`msg : ${resMessage}`);
+                console.log(`글자 수 : ${resMessage.length}`);
+
+                req.body = {
+                    senderkey: process.env.ALIGO_SENDERKEY,
+                    tpl_code: 'UA_7459',
+                    sender: '010-6628-6651',
+                    receiver: managerPhone,
+                    subject_1: '분양정보 신청고객 알림톡',
+                    message_1: `${customerInfo.ciSite}고객 유입 알림!\n\n고객명:${customerInfo.ciName}\n연락처:${customerInfo.ciReceiver}\n\n※ 상담 대기 상태입니다.\n빠르게 컨택 진행 부탁 드립니다.`,
+                    button_1: {
+                        "button": [{
+                            "name": "채널 추가",
+                            "linkType": "AC"
+                        }]
+                    }
                 }
+
+                try {
+                    const aligo_res = await aligoapi.alimtalkSend(req, AuthData)
+                    console.log(`알리고 발송 : ${aligo_res.message}`);
+                } catch (err) {
+                    console.error(err.message);
+                }
+                // try {
+                //     aligoKakaoNotification_formanager(req, customerInfo)
+                // } catch (e) {
+                //     console.error(e.message);
+                // }
             }
         }
 
@@ -197,7 +225,7 @@ zapierRouter.post('/', async (req, res) => {
 
     } catch (err) {
         console.log('에러나는거야?');
-        
+
         console.error(err.message);
         status = false;
     }
