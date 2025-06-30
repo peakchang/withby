@@ -146,52 +146,49 @@ zapierRouter.post('/', async (req, res) => {
         const mailSubject = `(위드분양 접수) ${reFormName} 고객명 ${dbName} 접수되었습니다.`;
         const mailContent = `현장: ${reFormName} / 이름 : ${dbName} / 전화번호 : ${get_phone} ${addEtcMessage}`;
         mailSender('adpeak@naver.com', mailSubject, mailContent);
-        mailSender('changyong112@naver.com', mailSubject, mailContent);
+        // mailSender('changyong112@naver.com', mailSubject, mailContent);
         // mailSender('slkym@naver.com', mailSubject, mailContent);
 
 
+        // 현장명 찾기!!!
+        const getSiteInfoSql = `SELECT * FROM site_list WHERE sl_site_name = ?`
+        const getSiteInfoData = await sql_con.promise().query(getSiteInfoSql, [reFormName])
+        const getSiteInfo = getSiteInfoData[0][0];
 
 
+        if (getSiteInfo.sl_site_link) {
+            var siteList = getSiteInfo.sl_site_link
+        } else {
+            var siteList = '정보없음'
+        }
 
-        // // 현장명 찾기!!!
-        // const getSiteInfoSql = `SELECT * FROM site_list WHERE sl_site_name = ?`
-        // const getSiteInfoData = await sql_con.promise().query(getSiteInfoSql, [reFormName])
-        // const getSiteInfo = getSiteInfoData[0][0];
-
-
-        // if (getSiteInfo.sl_site_link) {
-        //     var siteList = getSiteInfo.sl_site_link
-        // } else {
-        //     var siteList = '정보없음'
-        // }
-
-        // const receiverStr = `${get_phone} ${addEtcMessage}`
+        const receiverStr = `${get_phone} ${addEtcMessage}`
 
 
-        // const cleanText = dbName.replace(/[^\w\s.,!@#$%^&*()_\-+=\[\]{}|;:'"<>?\\/가-힣]/g, '');
-        // const containsKoreanOrEnglish = /[A-Za-z\uAC00-\uD7A3]/.test(cleanText);
+        const cleanText = dbName.replace(/[^\w\s.,!@#$%^&*()_\-+=\[\]{}|;:'"<>?\\/가-힣]/g, '');
+        const containsKoreanOrEnglish = /[A-Za-z\uAC00-\uD7A3]/.test(cleanText);
 
-        // if (containsKoreanOrEnglish) {
-        //     dbName = cleanText
-        // } else {
-        //     dbName = '성함 미입력'
-        // }
+        if (containsKoreanOrEnglish) {
+            dbName = cleanText
+        } else {
+            dbName = '성함 미입력'
+        }
 
-        // var customerInfo = { ciName: dbName, ciCompany: '위드분양', ciSite: getSiteInfo.sl_site_name, ciSiteLink: siteList, ciReceiver: receiverStr }
+        var customerInfo = { ciName: dbName, ciCompany: '위드분양', ciSite: getSiteInfo.sl_site_name, ciSiteLink: siteList, ciReceiver: receiverStr }
 
-        // // 매니저한테 알림톡 / 문자 발송
-        // for (let oo = 0; oo < findUser.length; oo++) {
-        //     const managerPhone = findUser[oo].user_phone
-        //     if (managerPhone.includes('010')) {
-        //         customerInfo['ciPhone'] = managerPhone
-        //         // console.log(customerInfo);
-        //         try {
-        //             aligoKakaoNotification_formanager(req, customerInfo)
-        //         } catch (e) {
-        //             console.error(e.message);
-        //         }
-        //     }
-        // }
+        // 매니저한테 알림톡 / 문자 발송
+        for (let oo = 0; oo < findUser.length; oo++) {
+            const managerPhone = findUser[oo].user_phone
+            if (managerPhone.includes('010')) {
+                customerInfo['ciPhone'] = managerPhone
+                // console.log(customerInfo);
+                try {
+                    aligoKakaoNotification_formanager(req, customerInfo)
+                } catch (e) {
+                    console.error(e.message);
+                }
+            }
+        }
         // 알림톡 발송 끝~~~~
         return res.sendStatus(200);
 

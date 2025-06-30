@@ -141,12 +141,19 @@ export async function aligoKakaoNotification_formanager(req, customerInfo) {
 
         req.body = {
             senderkey: process.env.ALIGO_SENDERKEY,
-            tpl_code: 'TX_0641',
+            tpl_code: 'UA_7459',
             token: result.token,
             sender: '010-6628-6651',
             receiver_1: customerInfo.ciPhone,
             subject_1: '분양정보 신청고객 알림톡',
-            message_1: `고객 접수 안내!\n${customerInfo.ciSite} ${customerInfo.ciName} 접수되었습니다.\n고객 번호 : ${customerInfo.ciReceiver}`,
+            // message_1: `고객 접수 안내!\n${customerInfo.ciSite} ${customerInfo.ciName} 접수되었습니다.\n고객 번호 : ${customerInfo.ciReceiver}`,
+            message_1: `${customerInfo.ciSite}고객 유입 알림!\n\n고객명:${customerInfo.ciName}\n연락처:${customerInfo.ciReceiver}\n\n※ 상담 대기 상태입니다.\n빠르게 컨택 진행 부탁 드립니다.`,
+            button_1: {
+                "button": [{
+                    "name": "채널 추가",
+                    "linkType": "AC"
+                }]
+            }
 
         }
 
