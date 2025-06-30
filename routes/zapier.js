@@ -197,12 +197,12 @@ zapierRouter.post('/', async (req, res) => {
                     receiver: managerPhone,
                     subject_1: '분양정보 신청고객 알림톡',
                     message_1: `${customerInfo.ciSite}고객 유입 알림!\n\n고객명:${customerInfo.ciName}\n연락처:${customerInfo.ciReceiver}\n\n※ 상담 대기 상태입니다.\n빠르게 컨택 진행 부탁 드립니다.`,
-                    button_1: {
-                        "button": [{
-                            "name": "채널 추가",
-                            "linkType": "AC"
-                        }]
-                    }
+                    // button_1: {
+                    //     "button": [{
+                    //         "name": "채널 추가",
+                    //         "linkType": "AC"
+                    //     }]
+                    // }
                 }
 
                 try {
