@@ -20,11 +20,9 @@ zapierRouter.get('/', (req, res) => {
 });
 
 zapierRouter.post('/', async (req, res) => {
-    console.log('일단 들어 왔니?!?!?!??!');
 
     let status = true;
     const body = req.body;
-    console.log(body);
 
     const dbData = {
         dbName: body.name,
@@ -67,7 +65,6 @@ zapierRouter.post('/', async (req, res) => {
                 return res.sendStatus(200);
             }
         } catch (error) {
-            console.log('그냥 에러지?');
             console.error(error.message);
         }
 
@@ -76,8 +73,6 @@ zapierRouter.post('/', async (req, res) => {
         const chkFormInSiteListSql = `SELECT * FROM site_list WHERE sl_site_name = ?`;
         const chkFormInSiteListData = await sql_con.promise().query(chkFormInSiteListSql, [reFormName]);
         const chkFormInSiteList = chkFormInSiteListData[0][0]
-
-        console.log(chkFormInSiteList);
 
 
 
@@ -125,18 +120,15 @@ zapierRouter.post('/', async (req, res) => {
 
         const values = [reFormName, '분양', 'FB', dbName, get_phone, '', nowStr]
 
-        console.log(values);
-
+        
 
         // 폼 insert 하기!!
         const formInertSql = `INSERT INTO application_form (af_form_name, af_form_type_in, af_form_location, af_mb_name, af_mb_phone, af_mb_status ${etcInsertStr}, af_created_at) VALUES (?,?,?,?,?,? ${etcValuesStr},?);`;
 
-        console.log(formInertSql);
 
         await sql_con.promise().query(formInertSql, values)
 
-        console.log('chk1');
-
+        
 
         // 해당 폼네임에 저장된 담당자 리스트 찾기
         const userFindSql = `SELECT * FROM users WHERE manage_estate LIKE '%${reFormName}%';`;
@@ -150,7 +142,6 @@ zapierRouter.post('/', async (req, res) => {
         //     mailSender(goUser.user_email, mailSubjectManager, mailContentManager);
         // }
 
-        console.log('chk2');
         // 최고관리자에게 이메일 발송
         const mailSubject = `(위드분양 접수) ${reFormName} 고객명 ${dbName} 접수되었습니다.`;
         const mailContent = `현장: ${reFormName} / 이름 : ${dbName} / 전화번호 : ${get_phone} ${addEtcMessage}`;
@@ -158,8 +149,6 @@ zapierRouter.post('/', async (req, res) => {
         // mailSender('changyong112@naver.com', mailSubject, mailContent);
         // mailSender('slkym@naver.com', mailSubject, mailContent);
 
-
-        console.log('chk3');
         // 현장명 찾기!!!
         const getSiteInfoSql = `SELECT * FROM site_list WHERE sl_site_name = ?`
         const getSiteInfoData = await sql_con.promise().query(getSiteInfoSql, [reFormName])
@@ -174,7 +163,7 @@ zapierRouter.post('/', async (req, res) => {
 
         const receiverStr = `${get_phone} ${addEtcMessage}`
 
-        console.log('chk4');
+
         const cleanText = dbName.replace(/[^\w\s.,!@#$%^&*()_\-+=\[\]{}|;:'"<>?\\/가-힣]/g, '');
         const containsKoreanOrEnglish = /[A-Za-z\uAC00-\uD7A3]/.test(cleanText);
 
@@ -185,15 +174,15 @@ zapierRouter.post('/', async (req, res) => {
             resDbName = '성함 미입력'
         }
 
-        console.log('chk5');
         var customerInfo = { ciName: resDbName, ciCompany: '위드분양', ciSite: getSiteInfo.sl_site_name, ciSiteLink: siteList, ciReceiver: receiverStr }
 
+        console.log(customerInfo);
+        
         // 매니저한테 알림톡 / 문자 발송
         for (let oo = 0; oo < findUser.length; oo++) {
             const managerPhone = findUser[oo].user_phone
             if (managerPhone.includes('010')) {
                 customerInfo['ciPhone'] = managerPhone
-                // console.log(customerInfo);
                 try {
                     aligoKakaoNotification_formanager(req, customerInfo)
                 } catch (e) {
@@ -208,7 +197,7 @@ zapierRouter.post('/', async (req, res) => {
 
     } catch (err) {
         console.log('에러나는거야?');
-
+        
         console.error(err.message);
         status = false;
     }
