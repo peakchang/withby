@@ -31,6 +31,7 @@
         });
     });
 </script>
+
 <svelte:head>
     <Seo {seoValue}></Seo>
 </svelte:head>
@@ -96,8 +97,6 @@
         <div class="swiper-pagination"></div>
     </div>
 
-    
-
     <div class="mt-10 rounded-lg overflow-hidden">
         <div class="video-background">
             <video autoplay muted loop playsinline>
@@ -112,7 +111,14 @@
         </div>
     </div>
     <br class="mt-10" />
-    <div>lsadjfliasjdlifj</div>
+    <div>
+        <span class="inline-block">대표 : 박창용 | </span>
+        <span class="inline-block">사업자번호 : 509-63-00569 | </span>
+        <span class="inline-block">
+            주소 : 경기도 화성시 효행로 1068, 6층( 병점동, 리더스프라자 )
+        </span>
+        <span class="inline-block">대표번호 : 1644-8959</span>
+    </div>
 </div>
 
 <style>

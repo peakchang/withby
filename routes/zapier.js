@@ -212,6 +212,7 @@ zapierRouter.post('/', async (req, res) => {
                         receiver_1: managerPhone,
                         subject_1: '분양정보 신청고객 알림톡',
                         message_1: `${customerInfo.ciSite}고객 유입 알림!\n\n고객명:${customerInfo.ciName}\n연락처:${customerInfo.ciReceiver}\n\n※ 상담 대기 상태입니다.\n빠르게 컨택 진행 부탁 드립니다.`,
+                        // 버튼 있을 경우~
                         button_1:
                             JSON.stringify({
                                 "button": [{
@@ -224,13 +225,9 @@ zapierRouter.post('/', async (req, res) => {
                     const aligo_res = await aligoapi.alimtalkSend(req, AuthData)
                     console.log(`알리고 발송 : ${aligo_res.message}`);
                 } catch (err) {
-                    console.error(err.message);
+                    
+                    
                 }
-                // try {
-                //     aligoKakaoNotification_formanager(req, customerInfo)
-                // } catch (e) {
-                //     console.error(e.message);
-                // }
             }
         }
 
