@@ -110,8 +110,8 @@
             </div>
         </div>
     </div>
-    <br class="mt-10" />
-    <div>
+    <br class="mt-5" />
+    <div class="suit-font border-t border-gray-300 py-8">
         <span class="inline-block">대표 : 박창용 | </span>
         <span class="inline-block">사업자번호 : 509-63-00569 | </span>
         <span class="inline-block">
