@@ -1,7 +1,7 @@
 import express from "express";
 import fs from 'fs-extra';
 import path from "path";
-
+import aligoapi from 'aligoapi'
 import multer from "multer";
 import { sql_con } from '../back-lib/db.js'
 import { getQueryStr, aligoKakaoNotification_formanager, aligoKakaoNotification_detail } from '../back-lib/lib.js';
