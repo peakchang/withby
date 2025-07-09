@@ -595,7 +595,7 @@ subdomainRouter.post('/update_customer', async (req, res, next) => {
                     const aligo_res = await aligoapi.alimtalkSend(req, AuthData)
                     console.log(`알리고 발송 : ${aligo_res.message}`);
                 } catch (err) {
-
+                    console.error(err.message);
 
                 }
             }
