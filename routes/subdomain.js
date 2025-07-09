@@ -576,6 +576,8 @@ subdomainRouter.post('/update_customer', async (req, res, next) => {
                 // 알리고 카톡 발송!!!
                 try {
 
+                    console.log(`${manager['user_phone']} 에게 ${body.name} / ${body.phone} 알리고 카톡 발송!!!`);
+                    
                     req.body = {
                         type: 'i',  // 유효시간 타입 코드 // y(년), m(월), d(일), h(시), i(분), s(초)
                         time: 1, // 유효시간
