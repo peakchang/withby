@@ -80,6 +80,10 @@ zapierRouter.post('/', async (req, res) => {
         const chkFormInSiteListData = await sql_con.promise().query(chkFormInSiteListSql, [reFormName]);
         const chkFormInSiteList = chkFormInSiteListData[0][0]
 
+        console.log(`chkFormInSiteList :`);
+        console.log(chkFormInSiteList);
+        
+
 
 
         if (!chkFormInSiteList) {
@@ -108,6 +112,11 @@ zapierRouter.post('/', async (req, res) => {
             etcValuesStr = etcValuesStr + `, '${dbData.etc3}'`;
             addEtcMessage = addEtcMessage + `// 기타 정보3 : ${dbData.etc3}`
         }
+
+        console.log('etcInsertStr :');
+        console.log(etcInsertStr);
+        
+        
         // for (const key in body) {
         //     if (key.includes('raw__etc1')) {
         //         etcInsertStr = etcInsertStr + `, af_mb_etc1`;
@@ -140,6 +149,9 @@ zapierRouter.post('/', async (req, res) => {
         const userFindSql = `SELECT * FROM users WHERE manage_estate LIKE '%${reFormName}%';`;
         const findUserData = await sql_con.promise().query(userFindSql);
         const findUser = findUserData[0];
+
+        console.log(findUser);
+        
 
         // 담당자들 에게 이메일 발송
         // for await (const goUser of findUser) {
@@ -183,6 +195,8 @@ zapierRouter.post('/', async (req, res) => {
         var customerInfo = { ciName: resDbName, ciCompany: '위드분양', ciSite: getSiteInfo.sl_site_name, ciSiteLink: siteList, ciReceiver: receiverStr }
 
         console.log(customerInfo);
+
+        console.log('chk0');
 
         // 매니저한테 알림톡 / 문자 발송
         for (let oo = 0; oo < findUser.length; oo++) {
