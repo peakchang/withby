@@ -231,8 +231,8 @@ zapierRouter.post('/', async (req, res) => {
                     const aligo_res = await aligoapi.alimtalkSend(req, AuthData)
                     console.log(`알리고 발송 : ${aligo_res.message}`);
                 } catch (err) {
-                    
-                    
+                    console.error('알리고 발송 에러 발생');
+                    console.error(err.message);
                 }
             }
         }
