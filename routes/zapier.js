@@ -186,10 +186,14 @@ zapierRouter.post('/', async (req, res) => {
 
         // 매니저한테 알림톡 / 문자 발송
         for (let oo = 0; oo < findUser.length; oo++) {
+
+            console.log('chk1');
+            
             const managerPhone = findUser[oo].user_phone
             if (managerPhone.includes('010')) {
                 customerInfo['ciPhone'] = managerPhone
 
+                console.log('chk2');
                 const resMessage = `탑분양 고객 인입 안내! ${getSiteInfo.sl_site_name} 현장 / ${dbName}님 접수되었습니다! 고객 번호 : ${receiverStr}`
                 // console.log('문자 발송 부분!!!');
                 // console.log(`receiver : ${managerPhone}`);
@@ -198,6 +202,7 @@ zapierRouter.post('/', async (req, res) => {
 
                 // 알리고 카톡 발송!!!
                 try {
+                    console.log('chk3');
                     const AuthData = {
                         apikey: process.env.ALIGOKEY,
                         // 이곳에 발급받으신 api key를 입력하세요
@@ -227,8 +232,9 @@ zapierRouter.post('/', async (req, res) => {
                                 }]
                             })
                     }
-
+                    console.log('chk4');
                     const aligo_res = await aligoapi.alimtalkSend(req, AuthData)
+                    console.log('chk5');
                     console.log(`알리고 발송 : ${aligo_res.message}`);
                 } catch (err) {
                     console.error('알리고 발송 에러 발생');
