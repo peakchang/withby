@@ -24,6 +24,8 @@ zapierRouter.post('/', async (req, res) => {
     let status = true;
     const body = req.body;
 
+    console.log('Zapier POST 요청 받음---------------------------------------------------------------');
+    
     console.log(body);
     
 
@@ -68,6 +70,7 @@ zapierRouter.post('/', async (req, res) => {
                 return res.sendStatus(200);
             }
         } catch (error) {
+            console.log('chkFor2WeeksData 에러 발생');
             console.error(error.message);
         }
 
@@ -188,10 +191,10 @@ zapierRouter.post('/', async (req, res) => {
                 customerInfo['ciPhone'] = managerPhone
 
                 const resMessage = `탑분양 고객 인입 안내! ${getSiteInfo.sl_site_name} 현장 / ${dbName}님 접수되었습니다! 고객 번호 : ${receiverStr}`
-                console.log('문자 발송 부분!!!');
-                console.log(`receiver : ${managerPhone}`);
-                console.log(`msg : ${resMessage}`);
-                console.log(`글자 수 : ${resMessage.length}`);
+                // console.log('문자 발송 부분!!!');
+                // console.log(`receiver : ${managerPhone}`);
+                // console.log(`msg : ${resMessage}`);
+                // console.log(`글자 수 : ${resMessage.length}`);
 
                 // 알리고 카톡 발송!!!
                 try {
@@ -233,8 +236,6 @@ zapierRouter.post('/', async (req, res) => {
                 }
             }
         }
-
-        console.log('chk6');
         // 알림톡 발송 끝~~~~
         return res.sendStatus(200);
 
