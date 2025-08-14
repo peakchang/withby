@@ -24,6 +24,9 @@ zapierRouter.post('/', async (req, res) => {
     let status = true;
     const body = req.body;
 
+    console.log(body);
+    
+
     const dbData = {
         dbName: body.name,
         dbPhone: body.phone,
