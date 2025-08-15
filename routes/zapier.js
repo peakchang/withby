@@ -155,7 +155,6 @@ zapierRouter.post('/', async (req, res) => {
         const findUserData = await sql_con.promise().query(userFindSql);
         const findUser = findUserData[0];
 
-        console.log(findUser);
 
 
         // 담당자들 에게 이메일 발송
@@ -199,7 +198,7 @@ zapierRouter.post('/', async (req, res) => {
 
         var customerInfo = { ciName: resDbName, ciCompany: '위드분양', ciSite: getSiteInfo.sl_site_name, ciSiteLink: siteList, ciReceiver: receiverStr }
 
-        console.log(customerInfo);
+ 
 
         console.log('chk0');
 
