@@ -25,18 +25,27 @@ zapierRouter.post('/', async (req, res) => {
     const body = req.body;
 
     console.log('Zapier POST 요청 받음---------------------------------------------------------------');
-    
+
     console.log(body);
-    
+
 
     const dbData = {
-        dbName: body.name,
-        dbPhone: body.phone,
-        dbForm: body.form,
-        etc1: body.etc1 ? body.etc1 : undefined,
-        etc2: body.etc2 ? body.etc2 : undefined,
-        etc3: body.etc3 ? body.etc3 : undefined,
+        dbName: body.이름,
+        dbPhone: body.phone_number,
+        dbForm: body.form_name,
     }
+
+    for (let i = 1; i <= 4; i++) {
+        for (const key in body) {
+            if (key.includes(`etc${i}`)) {
+                dbData[`etc${i}`] = data[key];
+                break; // 첫 번째만
+            }
+        }
+    }
+
+    console.log(dbData);
+    
 
     try {
 
@@ -80,10 +89,6 @@ zapierRouter.post('/', async (req, res) => {
         const chkFormInSiteListData = await sql_con.promise().query(chkFormInSiteListSql, [reFormName]);
         const chkFormInSiteList = chkFormInSiteListData[0][0]
 
-        console.log(`chkFormInSiteList :`);
-        console.log(chkFormInSiteList);
-        
-
 
 
         if (!chkFormInSiteList) {
@@ -115,8 +120,8 @@ zapierRouter.post('/', async (req, res) => {
 
         console.log('etcInsertStr :');
         console.log(etcInsertStr);
-        
-        
+
+
         // for (const key in body) {
         //     if (key.includes('raw__etc1')) {
         //         etcInsertStr = etcInsertStr + `, af_mb_etc1`;
@@ -151,7 +156,7 @@ zapierRouter.post('/', async (req, res) => {
         const findUser = findUserData[0];
 
         console.log(findUser);
-        
+
 
         // 담당자들 에게 이메일 발송
         // for await (const goUser of findUser) {
@@ -202,7 +207,7 @@ zapierRouter.post('/', async (req, res) => {
         for (let oo = 0; oo < findUser.length; oo++) {
 
             console.log('chk1');
-            
+
             const managerPhone = findUser[oo].user_phone
             if (managerPhone.includes('010')) {
                 customerInfo['ciPhone'] = managerPhone
