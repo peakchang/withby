@@ -38,7 +38,7 @@ zapierRouter.post('/', async (req, res) => {
     for (let i = 1; i <= 4; i++) {
         for (const key in body) {
             if (key.includes(`etc${i}`)) {
-                dbData[`etc${i}`] = data[key];
+                dbData[`etc${i}`] = body[key];
                 break; // 첫 번째만
             }
         }
