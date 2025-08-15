@@ -30,8 +30,6 @@ zapierRouter.post('/', async (req, res) => {
 
 
     const dbData = {
-        dbName: body.이름,
-        dbPhone: body.phone_number,
         dbForm: body.form_name,
     }
 
@@ -39,13 +37,20 @@ zapierRouter.post('/', async (req, res) => {
         for (const key in body) {
             if (key.includes(`etc${i}`)) {
                 dbData[`etc${i}`] = body[key];
-                break; // 첫 번째만
+            }
+
+            if (key.includes('phone_number')) {
+                dbData['dbPhone'] = body[key];
+            }
+
+            if (key.includes('이름') || key.includes('full_name')) {
+                dbData['dbName'] = body[key];
             }
         }
     }
 
     console.log(dbData);
-    
+
 
     try {
 
@@ -198,7 +203,7 @@ zapierRouter.post('/', async (req, res) => {
 
         var customerInfo = { ciName: resDbName, ciCompany: '위드분양', ciSite: getSiteInfo.sl_site_name, ciSiteLink: siteList, ciReceiver: receiverStr }
 
- 
+
 
         console.log('chk0');
 
