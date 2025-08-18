@@ -160,8 +160,8 @@ zapierRouter.post('/', async (req, res) => {
 
         console.log(etcInsertStr);
         console.log(etcValuesStr);
-        
-        
+
+
 
         // 폼 insert 하기!!
         const formInertSql = `INSERT INTO application_form (af_form_name, af_form_type_in, af_form_location, af_mb_name, af_mb_phone ${etcInsertStr}, af_created_at) VALUES ('${reFormName}','분양','FB','${dbName}','${get_phone}' ${etcValuesStr},'${nowStr}');`;
@@ -170,7 +170,7 @@ zapierRouter.post('/', async (req, res) => {
 
 
 
-        await sql_con.promise().query(formInertSql, values)
+        await sql_con.promise().query(formInertSql)
 
 
 
