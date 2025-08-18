@@ -45,7 +45,7 @@ zapierRouter.post('/', async (req, res) => {
             if (key.includes(`etc${i}`)) {
 
                 if (isISODate(body[key])) {
-                    dbData[`etc${i}`] = moment(body[key]).format('YYYY/MM/DD HH:mm:ss')
+                    dbData[`etc${i}`] = moment(body[key]).format('YYYY-MM-DD HH:mm:ss')
                 } else {
                     dbData[`etc${i}`] = body[key];
                 }
