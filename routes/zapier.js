@@ -19,6 +19,13 @@ zapierRouter.get('/', (req, res) => {
     res.json({ status })
 });
 
+
+function isISODate(str) {
+    const regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}([+-]\d{4}|Z)$/;
+    return regex.test(str);
+}
+
+
 zapierRouter.post('/', async (req, res) => {
 
     let status = true;
@@ -36,7 +43,13 @@ zapierRouter.post('/', async (req, res) => {
     for (let i = 1; i <= 4; i++) {
         for (const key in body) {
             if (key.includes(`etc${i}`)) {
-                dbData[`etc${i}`] = body[key];
+
+                if (isISODate(body[key])) {
+                    dbData[`etc${i}`] = moment(body[key]).format('YYYY/MM/DD HH:mm:ss')
+                } else {
+                    dbData[`etc${i}`] = body[key];
+                }
+
             }
 
             if (key.includes('phone_number')) {
@@ -151,7 +164,7 @@ zapierRouter.post('/', async (req, res) => {
         const formInertSql = `INSERT INTO application_form (af_form_name, af_form_type_in, af_form_location, af_mb_name, af_mb_phone, af_mb_status ${etcInsertStr}, af_created_at) VALUES (?,?,?,?,?,? ${etcValuesStr},?);`;
 
         console.log(formInertSql);
-        
+
 
 
         await sql_con.promise().query(formInertSql, values)
