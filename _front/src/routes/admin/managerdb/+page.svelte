@@ -17,8 +17,8 @@
     // 쿼리 파라미터 연관 변수
     let pageCount = $state("30");
     let nowPage = $state(1);
-    let startDate = $state(moment.utc().startOf("month").format("YYYY-MM-DD"));
-    let endDate = $state(moment.utc().format("YYYY-MM-DD"));
+    let startDate = $state(moment().startOf("month").format("YYYY-MM-DD"));
+    let endDate = $state(moment().format("YYYY-MM-DD"));
     let filterSite = $state("");
     let setSite = $state("base");
     let setStatus = $state("base");
@@ -241,7 +241,7 @@
                     <tr>
                         <th class="in-th bg-blue-100">접수시간</th>
                         <td class="in-td p-2">
-                            {moment.utc(customerInfo.af_created_at).format(
+                            {moment(customerInfo.af_created_at).format(
                                 "YY-MM-DD HH:mm:ss",
                             )}
                         </td>
@@ -457,7 +457,7 @@
                     </div>
                 </td>
                 <td class="in-td p-2">
-                    {moment.utc(data.af_created_at).format("YY-MM-DD HH:mm:ss")}
+                    {moment(data.af_created_at).format("YY-MM-DD HH:mm:ss")}
                 </td>
             </tr>
         {/each}
