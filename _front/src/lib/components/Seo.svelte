@@ -33,7 +33,7 @@
     content="eac9d4ee9921a03f4f6dd6b674d702dab852a08f"
 />
 <meta name="keywords" content={seoValue.keywords} />
-<meta itemprop="image" content="/logo.png" />
+<meta itemprop="image" content="/with_thumb.jpg" />
 
 {#if seoValue.description}
 <meta itemprop="description" content={seoValue.description} />
@@ -49,7 +49,7 @@
 <meta property="og:title" content={seoValue.title} />
 <meta property="og:description" content={seoValue.description} />
 <meta property="og:url" content={seoValue.url} />
-<meta property="og:image" content="/logo.png" />
+<meta property="og:image" content="/with_thumb.jpg" />
 <meta property="description" content={seoValue.description} />
 
 <!-- <meta property="og:url" content={seoValue.url} /> -->
