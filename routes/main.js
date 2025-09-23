@@ -17,6 +17,8 @@ mainRouter.post('/chk_ex_file', async (req, res, next) => {
         const chkDb = await sql_con.promise().query(chkDbQuery, [body.ph_num])
 
         console.log(chkDb[0]);
+        console.log('s------------------------');
+        
         
         if (!chkDb[0][0]) {
             chkDbBool = false;
