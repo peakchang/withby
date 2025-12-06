@@ -87,7 +87,7 @@ app.use('/api/subdomain', subdomainRouter);
 
 
 app.use('/chk', (req, res) => {
-    res.send('백엔드 생성 완료!!')
+    res.send('백엔드 생성 완료~~~~~~~~~!!')
 });
 app.use(handler);
 
