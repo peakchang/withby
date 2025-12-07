@@ -267,3 +267,7 @@ export async function aligoKakaoNotification_detail(req, sendMessageObj) {
         console.error(e);
     }
 }
+
+export function numberToTime(num) {
+    return String(num).padStart(2, '0') + ":00";
+}

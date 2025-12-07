@@ -4,7 +4,7 @@ import path from "path";
 import aligoapi from 'aligoapi'
 import multer from "multer";
 import { sql_con } from '../back-lib/db.js'
-import { getQueryStr, aligoKakaoNotification_formanager, aligoKakaoNotification_detail } from '../back-lib/lib.js';
+import { getQueryStr, numberToTime, aligoKakaoNotification_formanager, aligoKakaoNotification_detail } from '../back-lib/lib.js';
 
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -335,8 +335,6 @@ subdomainRouter.post('/subview', async (req, res, next) => {
 
     }
 
-
-
     res.json({ status, subDomainName, subView })
 })
 
@@ -459,11 +457,12 @@ subdomainRouter.post('/update_site_set', async (req, res, next) => {
         const updateSiteSetQuery = `UPDATE land SET ${queryData.str} WHERE ld_domain = ?`
         queryData.values.push(body.get_id)
         await sql_con.promise().query(updateSiteSetQuery, queryData.values);
-
+        return res.status(200).json({})
     } catch (error) {
         console.error(error.message);
+        return res.status(500).json({ message: error.message })
     }
-    res.json({})
+
 })
 
 
@@ -535,94 +534,137 @@ subdomainRouter.post('/delete_img', async (req, res, next) => {
 })
 
 subdomainRouter.post('/update_customer', async (req, res, next) => {
-    let status = true;
-
     const body = req.body;
-
+    console.log(body);
     const now = moment().format('YY/MM/DD HH:mm:ss');
+
+    let reserveTime = ""
+    if (body.time) {
+        reserveTime = numberToTime(body.time)
+        console.log(reserveTime);
+    }
+
+    let addQuery = "";
+    let addValues = [];
+    if (body.name) {
+        addQuery = addQuery + ", af_mb_name"
+        addValues.push(body.name);
+    }
+    if (body.phone) {
+        addQuery = addQuery + ", af_mb_phone"
+        addValues.push(body.phone);
+    }
+
+    if (body.date && !body.time) {
+        addQuery = addQuery + ", af_mb_reserve_time"
+        addValues.push(body.date);
+    }
+
+    if (body.date && body.time != 'base') {
+        addQuery = addQuery + ", af_mb_reserve_time"
+        const dateTime = `${body.date} ${reserveTime}:00`
+        addValues.push(dateTime);
+    }
+
+    if (body.memo_1_answer) {
+        addQuery = addQuery + ", af_mb_etc1"
+        addValues.push(body.memo_1_answer);
+    }
+
+    if (body.memo_2_answer) {
+        addQuery = addQuery + ", af_mb_etc2"
+        addValues.push(body.memo_2_answer);
+    }
+
+    if (body.memo_3_answer) {
+        addQuery = addQuery + ", af_mb_etc3"
+        addValues.push(body.memo_3_answer);
+    }
+    addValues.push(now);
+    const placeholders = Array(addValues.length).fill('?').join(',');
+
     try {
         // DB 입력하기~~~
-        const insertCustomerQuery = "INSERT INTO application_form (af_form_name, af_form_type_in, af_form_location, af_mb_name, af_mb_phone, af_created_at) VALUES (?,?,?,?,?,?)";
-        await sql_con.promise().query(insertCustomerQuery, [body.siteName, "분양", "DB", body.name, body.phone, now]);
+        const insertCustomerQuery = `INSERT INTO application_form (af_form_name, af_form_type_in, af_form_location${addQuery}, af_created_at) VALUES (?,?,?,${placeholders})`;
+
+        await sql_con.promise().query(insertCustomerQuery, [body.siteName, "분양", "DB", ...addValues]);
 
     } catch (error) {
-        status = false;
+        console.error(error.message);
     }
 
-    try {
+    // try {
+    //     // 매니저들에게 카톡 발송~~
+    //     const getManagerListQuery = `SELECT * FROM users WHERE manage_estate LIKE "%${body.siteName}%"`;
+    //     const getManagerList = await sql_con.promise().query(getManagerListQuery);
+    //     const manager_list = getManagerList[0];
 
+    //     const AuthData = {
+    //         apikey: process.env.ALIGOKEY,
+    //         // 이곳에 발급받으신 api key를 입력하세요
+    //         userid: process.env.ALIGOID,
+    //         // 이곳에 userid를 입력하세요
+    //     }
+    //     if (manager_list && manager_list.length > 0) {
+    //         for (let i = 0; i < manager_list.length; i++) {
+    //             const manager = manager_list[i];
+    //             let customerInfo = {
+    //                 ciPhone: manager['user_phone'],
+    //                 ciSite: body.siteName,
+    //                 ciName: body.name,
+    //                 ciReceiver: body.phone
+    //             }
+    //             // aligoKakaoNotification_formanager(req, customerInfo)
+    //             // 알리고 카톡 발송!!!
+    //             try {
 
-        // 매니저들에게 카톡 발송~~
-        const getManagerListQuery = `SELECT * FROM users WHERE manage_estate LIKE "%${body.siteName}%"`;
-        const getManagerList = await sql_con.promise().query(getManagerListQuery);
-        const manager_list = getManagerList[0];
+    //                 console.log(`${manager['user_phone']} 에게 ${body.name} / ${body.phone} 알리고 카톡 발송!!!`);
 
-        const AuthData = {
-            apikey: process.env.ALIGOKEY,
-            // 이곳에 발급받으신 api key를 입력하세요
-            userid: process.env.ALIGOID,
-            // 이곳에 userid를 입력하세요
-        }
-        if (manager_list && manager_list.length > 0) {
-            for (let i = 0; i < manager_list.length; i++) {
-                const manager = manager_list[i];
-                let customerInfo = {
-                    ciPhone: manager['user_phone'],
-                    ciSite: body.siteName,
-                    ciName: body.name,
-                    ciReceiver: body.phone
-                }
-                // aligoKakaoNotification_formanager(req, customerInfo)
-                // 알리고 카톡 발송!!!
-                try {
+    //                 req.body = {
+    //                     type: 'i',  // 유효시간 타입 코드 // y(년), m(월), d(일), h(시), i(분), s(초)
+    //                     time: 1, // 유효시간
+    //                 }
 
-                    console.log(`${manager['user_phone']} 에게 ${body.name} / ${body.phone} 알리고 카톡 발송!!!`);
-                    
-                    req.body = {
-                        type: 'i',  // 유효시간 타입 코드 // y(년), m(월), d(일), h(시), i(분), s(초)
-                        time: 1, // 유효시간
-                    }
+    //                 const result = await aligoapi.token(req, AuthData);
+    //                 req.body = {
+    //                     senderkey: process.env.ALIGO_SENDERKEY,
+    //                     token: result.token,
+    //                     tpl_code: 'UA_7717',
+    //                     sender: '010-6628-6651',
+    //                     receiver_1: manager['user_phone'],
+    //                     subject_1: '분양정보 신청고객 알림톡',
+    //                     message_1: `${body.siteName}고객 유입 알림!\n\n고객명:${body.name}\n연락처:${body.phone}\n\n※ 상담 대기 상태입니다.\n빠르게 컨택 진행 부탁 드립니다.`,
+    //                 }
 
-                    const result = await aligoapi.token(req, AuthData);
-                    req.body = {
-                        senderkey: process.env.ALIGO_SENDERKEY,
-                        token: result.token,
-                        tpl_code: 'UA_7717',
-                        sender: '010-6628-6651',
-                        receiver_1: manager['user_phone'],
-                        subject_1: '분양정보 신청고객 알림톡',
-                        message_1: `${body.siteName}고객 유입 알림!\n\n고객명:${body.name}\n연락처:${body.phone}\n\n※ 상담 대기 상태입니다.\n빠르게 컨택 진행 부탁 드립니다.`,
-                    }
+    //                 const aligo_res = await aligoapi.alimtalkSend(req, AuthData)
+    //                 console.log(`알리고 발송 : ${aligo_res.message}`);
+    //             } catch (err) {
+    //                 console.error(err.message);
 
-                    const aligo_res = await aligoapi.alimtalkSend(req, AuthData)
-                    console.log(`알리고 발송 : ${aligo_res.message}`);
-                } catch (err) {
-                    console.error(err.message);
+    //             }
+    //         }
+    //     }
 
-                }
-            }
-        }
+    //     // 고객에게 카톡 발송~~~
+    //     const getSiteInfoQuery = "SELECT * FROM site_list WHERE sl_site_name = ?";
+    //     const getSiteInfo = await sql_con.promise().query(getSiteInfoQuery, [body.siteName]);
+    //     const site_info = getSiteInfo[0][0]
 
-        // 고객에게 카톡 발송~~~
-        const getSiteInfoQuery = "SELECT * FROM site_list WHERE sl_site_name = ?";
-        const getSiteInfo = await sql_con.promise().query(getSiteInfoQuery, [body.siteName]);
-        const site_info = getSiteInfo[0][0]
+    //     if (site_info) {
+    //         let sendMessageObj = {
+    //             receiver: body.phone,
+    //             customerName: body.name,
+    //             company: "위드분양",
+    //             siteRealName: site_info['sl_site_realname'],
+    //             smsContent: site_info['sl_sms_content'],
+    //         }
 
-        if (site_info) {
-            let sendMessageObj = {
-                receiver: body.phone,
-                customerName: body.name,
-                company: "탑분양",
-                siteRealName: site_info['sl_site_realname'],
-                smsContent: site_info['sl_sms_content'],
-            }
+    //         aligoKakaoNotification_detail(req, sendMessageObj)
+    //     }
+    // } catch (error) {
 
-            aligoKakaoNotification_detail(req, sendMessageObj)
-        }
-    } catch (error) {
-
-    }
-    res.json({ status })
+    // }
+    res.json({})
 })
 
 

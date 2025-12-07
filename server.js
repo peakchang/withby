@@ -26,6 +26,7 @@ import { zapierRouter } from './routes/zapier.js';
 
 import { subdomainRouter } from './routes/subdomain.js';
 
+import { imageRouter } from './routes/image.js'
 
 // import { apiRouter } from "./routes/exapi.js"
 app.use(cookieParser());
@@ -78,6 +79,8 @@ app.use('/api/v3/usermanage', userManageRouter);
 app.use('/api/v3/alldb', adminAllDbRouter);
 app.use('/api/v3/managerdb', adminManagerDbRouter);
 app.use('/api/v3/dbcount', adminDbCount);
+
+app.use('/api/v3/image', imageRouter);
 
 app.use('/webhook', webhookRouter);
 app.use('/zapier', zapierRouter);
