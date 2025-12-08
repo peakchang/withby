@@ -61,6 +61,9 @@ const ensureDirectoryExistence = (folderPath) => {
 
 // 이미지 업로드 부분!! (단일 이미지)
 subdomainRouter.post('/img_upload_set', img_upload_set.single('onimg'), (req, res, next) => {
+
+    console.log('일단 들어오닝?');
+    
     let saveUrl = ""
 
     saveUrl = `/subimg/${req.body.folder}/${req.file.originalname}`
@@ -319,14 +322,21 @@ subdomainRouter.post('/add_sms_count', async (req, res, next) => {
 
 subdomainRouter.post('/subview', async (req, res, next) => {
 
-
+    console.log('불러오기 들어옴?!');
+    
     let status = true;
     const subDomainName = req.body.subDomainName
+
+    console.log(subDomainName);
+    
     let subView = "";
     try {
         const getSubDomainQuery = "SELECT * FROM land WHERE ld_domain = ?";
         const getSubDomainCon = await sql_con.promise().query(getSubDomainQuery, [subDomainName]);
         subView = getSubDomainCon[0][0]
+
+        console.log(subView);
+        
     } catch (error) {
 
     }

@@ -97,15 +97,11 @@ imageRouter.post('/gcs_upload_single', imageUpload.single('onimg'), async (req, 
 // 여러 이미지 업로드
 imageRouter.post('/gcs_upload_multiple', imageUpload.array('onimg', 10), async (req, res, next) => {
 
-    console.log('일단 진입은 하니?!??!');
+    console.log('일단 멀티플 이미지 업로드 진입은 하니?!??!');
 
     const body = req.body;
     const { type, folder } = req.body;
     const now = moment().format('YYMMDD');
-
-
-
-
 
     console.log(req.files);
     console.log(body);
@@ -129,6 +125,8 @@ imageRouter.post('/gcs_upload_multiple', imageUpload.array('onimg', 10), async (
 
                 // GCS에 파일 업로드
                 const blob = bucket.file(saveUrl);
+                console.log(saveUrl);
+
                 const blobStream = blob.createWriteStream({
                     resumable: false,
                     metadata: {
@@ -199,13 +197,13 @@ imageRouter.post('/delete_gcs_img', async (req, res, next) => {
             const delPathArr = delPath.split('/');
             const delFolder = delPathArr[delPathArr.length - 2];
             const delFileName = delPathArr[delPathArr.length - 1];
-            const delPathLocal = path.join('./subuploads','img', delFolder, delFileName);
+            const delPathLocal = path.join('./subuploads', 'img', delFolder, delFileName);
 
             fs.unlink(delPathLocal, (err) => {
                 console.error(err);
             })
         } catch (error) {
-            console.error(error);
+            return res.status(400).json({})
         }
     } else {
         const bucketName = process.env.GCS_BUCKET_NAME;
@@ -218,8 +216,7 @@ imageRouter.post('/delete_gcs_img', async (req, res, next) => {
         }
     }
 
-
-    return res.json({})
+    return res.status(200).json({})
 })
 
 
