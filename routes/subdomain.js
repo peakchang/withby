@@ -11,6 +11,33 @@ import { dirname } from 'path';
 
 import { processImageFile } from "../back-lib/processImageFile.js";
 
+
+import { Storage } from "@google-cloud/storage"; // 사이트 복사 부분을 위해서 일단 불러오기
+
+
+// 사이트 복사 함수
+const storage = new Storage({
+    projectId: process.env.GCS_PROJECT_ID,
+    keyFilename: process.env.GCS_KEY_FILE,
+});
+
+async function copyFolder(bucketName, oldFolder, newFolder) {
+    const bucket = storage.bucket(bucketName);
+    const [files] = await bucket.getFiles({ prefix: oldFolder + '/' });
+
+    for (const file of files) {
+        const newFileName = file.name.replace(`${oldFolder}/`, `${newFolder}/`);
+        const destFile = bucket.file(newFileName);
+
+        await file.copy(destFile);
+        await destFile.makePublic(); // 🔥 이 줄이 포인트
+
+        console.log(`Copied & public: ${file.name} → ${newFileName}`);
+    }
+
+    console.log("폴더 복사 완료!");
+}
+
 import moment from "moment-timezone";
 moment.tz.setDefault("Asia/Seoul");
 
@@ -175,23 +202,8 @@ subdomainRouter.post('/copy_site', async (req, res, next) => {
         return res.status(400).json({ message: '데이터 불러오기 실패! 다시 시도해주세요!' })
     }
 
-    // local 환경에서 기존 폴더 있는지 체크
-    const oldFolderPath = path.join(__dirname, '..', 'subuploads', 'img', body.oldDomain);
-    const newFolderPath = path.join(__dirname, '..', 'subuploads', 'img', body.copyDomain);
-
     try {
-        if (fs.existsSync(oldFolderPath)) {
-            fs.copySync(oldFolderPath, newFolderPath);
-        }
-    } catch (error) {
-        return res.status(400).json({ message: '중복된 아이디값(도메인)이 있습니다.' })
-    }
-    
-    try {
-
         // 불러온 데이터 가공 & 구버전 이미지 복붙 하기!
-
-
         for (const key in copyData) {
             const val = copyData[key];
             if (val && typeof val === 'string') {
@@ -206,14 +218,10 @@ subdomainRouter.post('/copy_site', async (req, res, next) => {
         delete insertData.ld_call_clickcount;
         delete insertData.ld_sms_clickcount;
 
-        console.log(insertData);
-
         const queryStr = getQueryStr(insertData, 'insert', 'ld_created_at');
 
         const insertCopyData = `INSERT INTO land (${queryStr.str}) VALUES (${queryStr.question})`;
         await sql_con.promise().query(insertCopyData, queryStr.values);
-
-
     } catch (error) {
         console.error(error.message);
 
@@ -221,19 +229,21 @@ subdomainRouter.post('/copy_site', async (req, res, next) => {
 
     }
 
+    copyFolder(process.env.GCS_BUCKET_NAME, body.oldDomain, body.copyDomain);
 
-    // const getOldFolder = `./public/uploads/image/${body.copyData.hy_num}`
-    //         const getNewFolder = `./public/uploads/image/${body.copyId}`;
-    //         if (fs.existsSync(getOldFolder)) {
-    //             fs.copySync(getOldFolder, getNewFolder);
-    //         } else {
-    //         }
+    // local 환경에서 기존 폴더 있는지 체크
+    const oldFolderPath = path.join(__dirname, '..', 'subuploads', 'img', body.oldDomain);
+    const newFolderPath = path.join(__dirname, '..', 'subuploads', 'img', body.copyDomain);
 
-    // >> 기존폴더 있으면 복사
+    try {
+        if (fs.existsSync(oldFolderPath)) {
+            fs.copySync(oldFolderPath, newFolderPath);
+        }
+    } catch (error) {
+        return res.status(400).json({ message: '중복된 아이디값(도메인)이 있습니다.' })
+    }
 
-    // 데이터 가공
-    // 혹시 모르니까 돌면서 겸사겸사 구버전 (http 붙어있는거) 이미지 경로 체크, 있으면 리스트 만들어서 복붙 밑 문자열 변경 해주기
-    // 1. 리스트로 변환 / 2. 새 값으로 만들기 / 3. 직접적으로 하나씩 replace >> 저장
+
 
     return res.json({})
 })
