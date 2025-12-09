@@ -221,20 +221,48 @@ imageRouter.post('/delete_gcs_img', async (req, res, next) => {
 
 
 imageRouter.post('/delete_gcs_img_many', async (req, res, next) => {
-    const delImgList = req.body.delImgList
 
-    for (let i = 0; i < delImgList.length; i++) {
-        const delPath = delImgList[i];
+    console.log('들어 와야 할거 아냐~~~!!!');
 
-        const bucketName = process.env.GCS_BUCKET_NAME;
-        const bucket = storage.bucket(bucketName);
-        try {
-            await bucket.file(delPath).delete()
-        } catch (error) {
-            console.error(error.message);
+    const { delImgList } = req.body
+
+    try {
+        for (let i = 0; i < delImgList.length; i++) {
+            const delPath = delImgList[i];
+            // 기존 파일은 기존 파일대로!!!
+            if (delPath.includes('subimg')) {
+                try {
+                    const delPathArr = delPath.split('/');
+                    const delFolder = delPathArr[delPathArr.length - 2];
+                    const delFileName = delPathArr[delPathArr.length - 1];
+                    const delPathLocal = path.join('./subuploads', 'img', delFolder, delFileName);
+
+                    fs.unlink(delPathLocal, (err) => {
+                        console.error(err);
+                    })
+                } catch (error) {
+                    return res.status(400).json({})
+                }
+            } else {
+                const bucketName = process.env.GCS_BUCKET_NAME;
+                const bucket = storage.bucket(bucketName);
+                try {
+                    await bucket.file(delPath).delete()
+                } catch (error) {
+                    console.error(error.message);
+                    return res.status(400).json({})
+                }
+            }
         }
+        return res.status(200).json({})
+    } catch (error) {
+        return res.status(500).json({})
     }
-    return res.json({})
+
+
+
+
+
 })
 
 

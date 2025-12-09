@@ -63,7 +63,7 @@ const ensureDirectoryExistence = (folderPath) => {
 subdomainRouter.post('/img_upload_set', img_upload_set.single('onimg'), (req, res, next) => {
 
     console.log('일단 들어오닝?');
-    
+
     let saveUrl = ""
 
     saveUrl = `/subimg/${req.body.folder}/${req.file.originalname}`
@@ -164,6 +164,7 @@ subdomainRouter.post('/copy_site', async (req, res, next) => {
 
     const body = req.body
     let copyData = {}
+    let insertData = {}
 
     // 데이터 불러오기
     try {
@@ -174,8 +175,7 @@ subdomainRouter.post('/copy_site', async (req, res, next) => {
         return res.status(400).json({ message: '데이터 불러오기 실패! 다시 시도해주세요!' })
     }
 
-    // 기존 폴더 있는지 체크
-
+    // local 환경에서 기존 폴더 있는지 체크
     const oldFolderPath = path.join(__dirname, '..', 'subuploads', 'img', body.oldDomain);
     const newFolderPath = path.join(__dirname, '..', 'subuploads', 'img', body.copyDomain);
 
@@ -186,47 +186,29 @@ subdomainRouter.post('/copy_site', async (req, res, next) => {
     } catch (error) {
         return res.status(400).json({ message: '중복된 아이디값(도메인)이 있습니다.' })
     }
-
-
+    
     try {
 
         // 불러온 데이터 가공 & 구버전 이미지 복붙 하기!
+
+
         for (const key in copyData) {
             const val = copyData[key];
             if (val && typeof val === 'string') {
-                if (copyData[key].includes('http') && copyData[key].includes('img')) {
-                    const imageUrls = copyData[key].match(/https?:\/\/[^\s'"]+\.(jpg|jpeg|png|webp|gif)(\?[^\s'"]*)?/gi);
-                    if (imageUrls) {
-                        for (let i = 0; i < imageUrls.length; i++) {
-                            try {
-                                const us = imageUrls[i].split('/');
-                                // 기존 이미지 절대경로 따기
-                                const oldImagePath = path.join(__dirname, '..', 'subuploads', 'img', us[us.length - 2], us[us.length - 1]);
-                                // 이미지 복붙 하기
-                                const newImagePath = path.join(__dirname, '..', 'subuploads', 'img', body.copyDomain, us[us.length - 1]);
-                                fs.copyFileSync(oldImagePath, newImagePath);
-
-                                // 기존 데이터를 새로운 경로 데이터로 변경하기
-                                const newPath = `/subimg/${body.copyDomain}/${us[us.length - 1]}`
-                                copyData[key] = copyData[key].replace(imageUrls[i], newPath)
-                            } catch (error) {
-                                console.error(error.message);
-
-                            }
-
-                        }
-                    }
-
-                } else if (copyData[key].includes(body.oldDomain)) {
-                    copyData[key] = copyData[key].replaceAll(body.oldDomain, body.copyDomain)
-                }
+                insertData[key] = val.replace(new RegExp(body.oldDomain, 'g'), body.copyDomain);
             }
         }
 
-        delete copyData.ld_id;
-        delete copyData.ld_created_at;
+        delete insertData.ld_id;
+        delete insertData.ld_created_at;
 
-        const queryStr = getQueryStr(copyData, 'insert', 'ld_created_at');
+        delete insertData.ld_visit_count;
+        delete insertData.ld_call_clickcount;
+        delete insertData.ld_sms_clickcount;
+
+        console.log(insertData);
+
+        const queryStr = getQueryStr(insertData, 'insert', 'ld_created_at');
 
         const insertCopyData = `INSERT INTO land (${queryStr.str}) VALUES (${queryStr.question})`;
         await sql_con.promise().query(insertCopyData, queryStr.values);
@@ -323,12 +305,12 @@ subdomainRouter.post('/add_sms_count', async (req, res, next) => {
 subdomainRouter.post('/subview', async (req, res, next) => {
 
     console.log('불러오기 들어옴?!');
-    
+
     let status = true;
     const subDomainName = req.body.subDomainName
 
     console.log(subDomainName);
-    
+
     let subView = "";
     try {
         const getSubDomainQuery = "SELECT * FROM land WHERE ld_domain = ?";
@@ -336,7 +318,7 @@ subdomainRouter.post('/subview', async (req, res, next) => {
         subView = getSubDomainCon[0][0]
 
         console.log(subView);
-        
+
     } catch (error) {
 
     }
