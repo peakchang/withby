@@ -552,19 +552,19 @@ subdomainRouter.post('/update_customer', async (req, res, next) => {
     if (body.memo1) {
         addQuery = addQuery + ", af_mb_etc1"
         addValues.push(body.memo1);
-        addSms = `/ ${body.memo1_q} : ${body.memo1}`
+        addSms = addSms + `/ ${body.memo1_q} : ${body.memo1}`
     }
 
     if (body.memo2) {
         addQuery = addQuery + ", af_mb_etc2"
         addValues.push(body.memo2);
-        addSms = `/ ${body.memo2_q} : ${body.memo2}`
+        addSms = addSms + `/ ${body.memo2_q} : ${body.memo2}`
     }
 
     if (body.memo3) {
         addQuery = addQuery + ", af_mb_etc3"
         addValues.push(body.memo3);
-        addSms = `/ ${body.memo3_q} : ${body.memo3}`
+        addSms = addSms + `/ ${body.memo3_q} : ${body.memo3}`
     }
     addValues.push(now);
     const placeholders = Array(addValues.length).fill('?').join(',');
