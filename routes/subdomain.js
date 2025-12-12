@@ -564,19 +564,19 @@ subdomainRouter.post('/update_customer', async (req, res, next) => {
         addValues.push(dateTime);
     }
 
-    if (body.memo_1_answer) {
+    if (body.memo1) {
         addQuery = addQuery + ", af_mb_etc1"
-        addValues.push(body.memo_1_answer);
+        addValues.push(body.memo3);
     }
 
-    if (body.memo_2_answer) {
+    if (body.memo2) {
         addQuery = addQuery + ", af_mb_etc2"
-        addValues.push(body.memo_2_answer);
+        addValues.push(body.memo3);
     }
 
-    if (body.memo_3_answer) {
+    if (body.memo3) {
         addQuery = addQuery + ", af_mb_etc3"
-        addValues.push(body.memo_3_answer);
+        addValues.push(body.memo3);
     }
     addValues.push(now);
     const placeholders = Array(addValues.length).fill('?').join(',');
@@ -586,7 +586,6 @@ subdomainRouter.post('/update_customer', async (req, res, next) => {
         const insertCustomerQuery = `INSERT INTO application_form (af_form_name, af_form_type_in, af_form_location${addQuery}, af_created_at) VALUES (?,?,?,${placeholders})`;
 
         await sql_con.promise().query(insertCustomerQuery, [body.siteName, "분양", "DB", ...addValues]);
-
     } catch (error) {
         console.error(error.message);
     }
