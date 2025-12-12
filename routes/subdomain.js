@@ -34,8 +34,6 @@ async function copyFolder(bucketName, oldFolder, newFolder) {
 
         console.log(`Copied & public: ${file.name} → ${newFileName}`);
     }
-
-    console.log("폴더 복사 완료!");
 }
 
 import moment from "moment-timezone";
@@ -88,13 +86,8 @@ const ensureDirectoryExistence = (folderPath) => {
 
 // 이미지 업로드 부분!! (단일 이미지)
 subdomainRouter.post('/img_upload_set', img_upload_set.single('onimg'), (req, res, next) => {
-
-    console.log('일단 들어오닝?');
-
     let saveUrl = ""
-
     saveUrl = `/subimg/${req.body.folder}/${req.file.originalname}`
-
     res.json({ saveUrl })
 })
 
@@ -313,22 +306,14 @@ subdomainRouter.post('/add_sms_count', async (req, res, next) => {
 })
 
 subdomainRouter.post('/subview', async (req, res, next) => {
-
-    console.log('불러오기 들어옴?!');
-
     let status = true;
     const subDomainName = req.body.subDomainName
-
-    console.log(subDomainName);
 
     let subView = "";
     try {
         const getSubDomainQuery = "SELECT * FROM land WHERE ld_domain = ?";
         const getSubDomainCon = await sql_con.promise().query(getSubDomainQuery, [subDomainName]);
         subView = getSubDomainCon[0][0]
-
-        console.log(subView);
-
     } catch (error) {
 
     }
@@ -539,11 +524,11 @@ subdomainRouter.post('/update_customer', async (req, res, next) => {
     let reserveTime = ""
     if (body.time) {
         reserveTime = numberToTime(body.time)
-        console.log(reserveTime);
     }
 
     let addQuery = "";
     let addValues = [];
+    let addSms = ""
     if (body.name) {
         addQuery = addQuery + ", af_mb_name"
         addValues.push(body.name);
@@ -566,17 +551,20 @@ subdomainRouter.post('/update_customer', async (req, res, next) => {
 
     if (body.memo1) {
         addQuery = addQuery + ", af_mb_etc1"
-        addValues.push(body.memo3);
+        addValues.push(body.memo1);
+        addSms = `/ ${body.memo1_q} : ${body.memo1}`
     }
 
     if (body.memo2) {
         addQuery = addQuery + ", af_mb_etc2"
-        addValues.push(body.memo3);
+        addValues.push(body.memo2);
+        addSms = `/ ${body.memo2_q} : ${body.memo2}`
     }
 
     if (body.memo3) {
         addQuery = addQuery + ", af_mb_etc3"
         addValues.push(body.memo3);
+        addSms = `/ ${body.memo3_q} : ${body.memo3}`
     }
     addValues.push(now);
     const placeholders = Array(addValues.length).fill('?').join(',');
@@ -630,7 +618,7 @@ subdomainRouter.post('/update_customer', async (req, res, next) => {
                         sender: '010-6628-6651',
                         receiver_1: manager['user_phone'],
                         subject_1: '분양정보 신청고객 알림톡',
-                        message_1: `${body.siteName}고객 유입 알림!\n\n고객명:${body.name}\n연락처:${body.phone}\n\n※ 상담 대기 상태입니다.\n빠르게 컨택 진행 부탁 드립니다.`,
+                        message_1: `${body.siteName}고객 유입 알림!\n\n고객명:${body.name}\n연락처:${`${body.phone} ${addSms}`}\n\n※ 상담 대기 상태입니다.\n빠르게 컨택 진행 부탁 드립니다.`,
                     }
 
                     const aligo_res = await aligoapi.alimtalkSend(req, AuthData)
@@ -643,21 +631,21 @@ subdomainRouter.post('/update_customer', async (req, res, next) => {
         }
 
         // 고객에게 카톡 발송~~~
-        const getSiteInfoQuery = "SELECT * FROM site_list WHERE sl_site_name = ?";
-        const getSiteInfo = await sql_con.promise().query(getSiteInfoQuery, [body.siteName]);
-        const site_info = getSiteInfo[0][0]
+        // const getSiteInfoQuery = "SELECT * FROM site_list WHERE sl_site_name = ?";
+        // const getSiteInfo = await sql_con.promise().query(getSiteInfoQuery, [body.siteName]);
+        // const site_info = getSiteInfo[0][0]
 
-        if (site_info) {
-            let sendMessageObj = {
-                receiver: body.phone,
-                customerName: body.name,
-                company: "위드분양",
-                siteRealName: site_info['sl_site_realname'],
-                smsContent: site_info['sl_sms_content'],
-            }
+        // if (site_info) {
+        //     let sendMessageObj = {
+        //         receiver: body.phone,
+        //         customerName: body.name,
+        //         company: "위드분양",
+        //         siteRealName: site_info['sl_site_realname'],
+        //         smsContent: site_info['sl_sms_content'],
+        //     }
 
-            aligoKakaoNotification_detail(req, sendMessageObj)
-        }
+        //     aligoKakaoNotification_detail(req, sendMessageObj)
+        // }
     } catch (error) {
 
     }
