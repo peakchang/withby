@@ -203,7 +203,7 @@ imageRouter.post('/delete_gcs_img', async (req, res, next) => {
                 console.error(err);
             })
         } catch (error) {
-            return res.status(400).json({})
+            // return res.status(400).json({})
         }
     } else {
         const bucketName = process.env.GCS_BUCKET_NAME;
@@ -215,7 +215,7 @@ imageRouter.post('/delete_gcs_img', async (req, res, next) => {
             await bucket.file(delPath).delete()
         } catch (error) {
             console.error(error.message);
-            return res.status(400).json({})
+            // return res.status(400).json({})
         }
     }
     return res.status(200).json({})
