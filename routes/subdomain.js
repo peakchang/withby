@@ -499,8 +499,6 @@ subdomainRouter.post('/delete_single_image', async (req, res, next) => {
 })
 
 
-
-
 subdomainRouter.post('/delete_img', async (req, res, next) => {
     let status = true;
     const body = req.body;
